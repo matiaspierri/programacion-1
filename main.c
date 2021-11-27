@@ -47,24 +47,34 @@ typedef struct
     int tam;
 } Lista_enlazada_producto;
 
-//Funciones
+//Funciones de imprimir menu
 int imprimir_menu_principal();
-
-void menu_admin(Lista_enlazada_producto * lista);
 int imprimir_menu_admin();
+int imprimir_menu_admin_clientes();
+int imprimir_menu_admin_productos();
+int imprimir_menu_admin_facturacion();
+
+//Funciones acciones de menu
+void menu_admin(Lista_enlazada_producto * lista);
+
+void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos);
+
+
+
+//Funciones pantalla productos
 void cargar_productos(Lista_enlazada_producto * lista);
 void imprimir_producto( Productos producto, int i);
-
-
-//Listas
-void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos);
-
-struct Nodo_producto *crear_nodo_producto(Productos *datos);
 void listar_productos(Lista_enlazada_producto *lista);
+void modificar_producto(Lista_enlazada_producto * lista);
+
+//Lista productos
+void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos);
+struct Nodo_producto *crear_nodo_producto(Productos *datos);
 void lista_productos_a_archivo(Lista_enlazada_producto *lista);
 void archivo_a_lista_productos(Lista_enlazada_producto *lista);
 
 
+//Funciones generales
 void borrar_pantalla();
 void frenar();
 void cerrar_programa();
@@ -103,6 +113,64 @@ int main()
     return 0;
 }
 
+void menu_admin(Lista_enlazada_producto * lista_datos_productos)
+{
+    int opcion=0;
+    while (opcion != 8)
+    {
+        borrar_pantalla();
+        opcion = imprimir_menu_admin();
+        switch (opcion)
+        {
+        case 1:
+
+            break;
+        case 2:
+            menu_admin_productos(lista_datos_productos);
+            break;
+        case 3:
+
+            break;
+        case 4:
+
+            break;
+        default:
+            invalida();
+            break;
+        }
+    }
+}
+
+void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
+{
+    int opcion=0;
+    while (opcion != 5)
+    {
+        borrar_pantalla();
+        opcion = imprimir_menu_admin_productos();
+        switch (opcion)
+        {
+        case 1:
+            cargar_productos(lista_datos_productos);
+            break;
+        case 2:
+            modificar_producto(lista_datos_productos);
+            break;
+        case 3:
+
+            break;
+        case 4:
+            listar_productos(lista_datos_productos);
+            break;
+        case 5:
+
+            break;
+        default:
+            invalida();
+            break;
+        }
+    }
+}
 
 int imprimir_menu_principal()
 {
@@ -117,56 +185,60 @@ int imprimir_menu_principal()
     return opcion;
 }
 
-void menu_admin(Lista_enlazada_producto * lista_datos_productos)
-{
-    int opcion;
-    do
-    {
-        borrar_pantalla();
-        opcion = imprimir_menu_admin();
-        switch (opcion)
-        {
-            case 1:
-            cargar_productos(lista_datos_productos);
-            break;
-            case 2:
-            listar_productos(lista_datos_productos);
-            break;
-            case 3:
-            //imprimir_historial_de_compras(texto);
-            break;
-            case 4:
-            //imprimir_clientes(binario);
-            break;
-            case 5:
-            //imprimir_clientes_vip(binario);
-            break;
-            case 6:
-            //imprimir_clientes_sin_compras(binario);
-            break;
-            case 7:
-            //printf("\n\nVolvemos al menu principal...\n\n");
-            //tocar_tecla();
-            break;
-            default:
-                invalida();
-                break;
-        }
-    } while (opcion != 8);
-}
-
 int imprimir_menu_admin()
 {
     int opcion;
-    printf("\nMenu de opcions de los administradores:\n\n");
-    printf("Opcion 1: Cargar Nuevos Productos.\n");
-    printf("Opcion 2: Listar Productos.\n");
-    printf("Opcion 3: Editar datos de algun cliente.\n");
-    printf("Opcion 4: Imprimir historial de compras .\n");
-    printf("Opcion 5: Imprimir lista de clientes.\n");
-    printf("Opcion 6: Imprimir clientes vip.\n");
-    printf("Opcion 7: Imprimir listado de las compras de los clientes.\n"); // cantidad de compras en X dias
-    printf("Opcion 8: Volver al menu principal.\n\n");
+    printf("\nMenu de opciones de los administradores:\n\n");
+    printf("Opcion 1: Clientes.\n");
+    printf("Opcion 2: Productos.\n");
+    printf("Opcion 3: Facturacion.\n");
+    printf("Opcion 4: Volver al Menu de Inicio.\n");
+    fflush(stdin);
+    scanf("%d", &opcion);
+    return opcion;
+}
+
+int imprimir_menu_admin_clientes()
+{
+    int opcion;
+    printf("\nClientes:\n\n");
+    printf("Opcion 1: Cargar Clientes.\n");
+    printf("Opcion 2: Modificar Cliente.\n");
+    printf("Opcion 3: Borrar Cliente.\n");
+    printf("Opcion 4: Listar Clientes.\n");
+    printf("Opcion 5: Listar Clientes VIP.\n");
+    printf("Opcion 6: Listar Clientes sin compras.\n");
+    printf("Opcion 7: Volver al Menu admin.\n");
+    printf("Ingresa una opcion: ");
+    fflush(stdin);
+    scanf("%d", &opcion);
+    return opcion;
+}
+
+int imprimir_menu_admin_productos()
+{
+    int opcion;
+    printf("\nProductos:\n\n");
+    printf("Opcion 1: Cargar Productos.\n");
+    printf("Opcion 2: Modificar Producto.\n");
+    printf("Opcion 3: Borrar Producto.\n");
+    printf("Opcion 4: Listar Productos.\n");
+    printf("Opcion 5: Volver al Menu admin.\n");
+    printf("Ingresa una opcion: ");
+    fflush(stdin);
+    scanf("%d", &opcion);
+    return opcion;
+}
+
+int imprimir_menu_admin_facturacion()
+{
+    int opcion;
+    printf("\nFacturacion:\n\n");
+    printf("Opcion 1: Producto Mas Vendido.\n");
+    printf("Opcion 2: Facturacion por Dia.\n");
+    printf("Opcion 3: Facturacion de Hoy.\n");
+    printf("Opcion 4: Facturacion Historica.\n");
+    printf("Opcion 5: Volver al Menu admin.\n");
     printf("Ingresa una opcion: ");
     fflush(stdin);
     scanf("%d", &opcion);
@@ -204,6 +276,47 @@ void cargar_productos(Lista_enlazada_producto * lista)
     lista_productos_a_archivo(lista);
 }
 
+void listar_productos(Lista_enlazada_producto *lista)
+{
+    borrar_pantalla();
+    if (lista->tam == 0)
+    {
+        printf("\nNo hay Productos\n");
+        frenar();
+        return;
+    }
+    struct Nodo_producto *nodo_actual = lista->ultimo;
+
+    for (int i = 0; i < lista->tam; i++)
+    {
+        imprimir_producto(nodo_actual->datos, i);
+        frenar();
+        nodo_actual = nodo_actual->siguiente;
+    }
+    printf("\nFin de los productos\n");
+    frenar();
+    return;
+}
+
+void imprimir_producto( Productos producto, int i)
+{
+    printf("\nProducto N%d", i+1);
+    printf("\nProducto: %s", producto.nombre);
+    printf("\nDescripcion: %s", producto.descripcion);
+    printf("\nStock: %d", producto.stock);
+    printf("\nVendidos: %d", producto.vendidos);
+    printf("\nPrecio: %.2f\n", producto.precio);
+}
+
+void modificar_producto(Lista_enlazada_producto * lista)
+{
+    printf("Lista de Productos: ");
+    listar_productos(lista);
+    printf("sdgs");
+    frenar();
+}
+
+
 void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos)
 {
     struct Nodo_producto *nuevo_nodo = crear_nodo_producto(datos);
@@ -237,38 +350,7 @@ struct Nodo_producto *crear_nodo_producto(Productos *datos)
     return nuevo_nodo;
 }
 
-void listar_productos(Lista_enlazada_producto *lista)
-{
-    borrar_pantalla();
-    if (lista->tam == 0)
-    {
-        printf("\nNo hay Productos\n");
-        frenar();
-        return;
-    }
-    struct Nodo_producto *nodo_actual = lista->ultimo;
 
-    for (int i = 0; i < lista->tam; i++)
-    {
-        imprimir_producto(nodo_actual->datos, i);
-        nodo_actual = nodo_actual->siguiente;
-    }
-    printf("\nFin de los productos\n");
-    frenar();
-    borrar_pantalla();
-    return;
-}
-
-void imprimir_producto( Productos producto, int i)
-{
-    printf("\n\nProducto N%d\n", i+1);
-    printf("\nProducto: %s", producto.nombre);
-    printf("\nDescripcion: %s", producto.descripcion);
-    printf("\nStock: %d", producto.stock);
-    printf("\nVendidos: %d", producto.vendidos);
-    printf("\nPrecio: %.2f\n", producto.precio);
-    frenar();
-}
 
 void borrar_pantalla()
 {
@@ -279,7 +361,6 @@ void frenar()
 {
     printf("\n");
     system("pause");
-    printf("\n");
 }
 
 void cerrar_programa()
