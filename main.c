@@ -68,6 +68,7 @@ int imprimir_menu_admin_facturacion();
 
 //Funciones acciones de menu
 void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos);
+void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos);
 void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes);
 void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos);
 
@@ -97,6 +98,7 @@ void cargar_productos(Lista_enlazada_producto * lista);
 void imprimir_producto( Productos producto, int i);
 void listar_productos(Lista_enlazada_producto *lista);
 void modificar_producto(Lista_enlazada_producto * lista);
+void aumentar_stock(Lista_enlazada_producto * lista);
 void ingresar_producto(Productos * producto);
 int buscar_producto(Lista_enlazada_producto * lista, char * mensaje);
 void eliminar_producto(Lista_enlazada_producto * lista);
@@ -118,6 +120,7 @@ void invalida();
 FILE * abrir_archivo(char * nombre_archivo, char * modo);
 void vaciar_archivo(char *nombreArchivo);
 int archivo_existe(char *nombreArchivo);
+void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista);
 
 int main()
 {
@@ -133,12 +136,13 @@ int main()
         switch (opcion)
         {
         case 1:
-            //Menu clientes
+            menu_cliente(Lista_cliente, Lista_producto);
             break;
         case 2:
             menu_admin(Lista_cliente, Lista_producto);
             break;
         case 3:
+            aumentar_dias_sin_compra(Lista_cliente);
             cerrar_programa();
             break;
         default:
@@ -149,6 +153,91 @@ int main()
     free(Lista_cliente);
     free(Lista_producto);
     return 0;
+}
+
+void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos)
+{
+    if (lista_datos_clientes->tam == 0)
+    {
+        printf("\nNo hay Clientes.\n");
+        printf("Ingrese Clientes para poder cargar compras\n");
+        frenar();
+        return;
+    }
+    if (lista_datos_productos->tam == 0)
+    {
+        printf("\nNo hay Productos\n");
+        printf("Ingrese Productos para poder cargar compras\n");
+        frenar();
+        return;
+    }
+    else
+    {
+        int id_cliente, id_producto, cantidad;
+        char respuesta='S';
+        printf("Lista de Clientes: ");
+        listar_clientes(lista_datos_clientes);
+        id_cliente = buscar_cliente(lista_datos_clientes, "Ingrese el ID del cliente a Realizar compra: ");
+        struct Nodo_cliente *nodo_actual_cliente = lista_datos_clientes->cabeza;
+        for(int i=0; i<id_cliente ; i++)
+        {
+            if(i+1==id_cliente)
+            {
+                while(toupper(respuesta)=='S')
+                {
+                    borrar_pantalla();
+                    imprimir_cliente(nodo_actual_cliente->datos, i);
+                    listar_productos(lista_datos_productos);
+                    id_producto = buscar_producto(lista_datos_productos, "Ingrese el ID del producto a comprar: ");
+                    struct Nodo_producto *nodo_actual_producto = lista_datos_productos->cabeza;
+
+                    for(int i=0; i<id_producto ; i++)
+                    {
+                        if(i+1==id_producto)
+                        {
+                            printf("\nCuantas Unidades desea comprar: ");
+                            scanf("%d", &cantidad);
+                            if( cantidad <= nodo_actual_producto->datos.stock )
+                            {
+                                nodo_actual_producto->datos.stock = nodo_actual_producto->datos.stock - cantidad;
+                                nodo_actual_producto->datos.vendidos += cantidad;
+                                nodo_actual_cliente->datos.cant_dias_sin_Comprar=0;
+                                if(nodo_actual_cliente->datos.cantidad_facturacion > VIP)
+                                {
+                                    nodo_actual_cliente->datos.cliente_vip=1;
+                                    nodo_actual_cliente->datos.cantidad_facturacion += ((float)cantidad * (nodo_actual_producto->datos.precio)) * 0.9;
+                                }
+                                else
+                                {
+                                    nodo_actual_cliente->datos.cantidad_facturacion += (float)cantidad * (nodo_actual_producto->datos.precio);
+                                }
+                                printf("\nProducto comprado correctamente\n");
+                            }
+                            else
+                            {
+                                printf("\nStock Insuficiente\n");
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            nodo_actual_producto = nodo_actual_producto->siguiente;
+                        }
+                    }
+                    printf("\nDesea realizar otra compra S/N: ");
+                    fflush(stdin);
+                    scanf(" %c", &respuesta);
+                }
+                break;
+            }
+            else
+            {
+                nodo_actual_cliente = nodo_actual_cliente->siguiente;
+            }
+        }
+        lista_clientes_a_archivo(lista_datos_clientes);
+        lista_productos_a_archivo(lista_datos_productos);
+    }
 }
 
 void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos)
@@ -170,7 +259,8 @@ void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_pr
 
             break;
         case 4:
-
+            printf("\nSaliendo del Menu de Administradores\n");
+            frenar();
             break;
         default:
             invalida();
@@ -206,6 +296,10 @@ void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
         case 6:
             listar_clientes_sin_compra(lista_datos_clientes);
             break;
+        case 7:
+            printf("\nSaliendo del menu Admin de clientes\n");
+            frenar();
+            break;
         default:
             invalida();
             break;
@@ -216,7 +310,7 @@ void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
 void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
 {
     int opcion=0;
-    while (opcion != 5)
+    while (opcion != 6)
     {
         borrar_pantalla();
         opcion = imprimir_menu_admin_productos();
@@ -229,13 +323,18 @@ void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
             modificar_producto(lista_datos_productos);
             break;
         case 3:
-            eliminar_producto(lista_datos_productos);
+            aumentar_stock(lista_datos_productos);
             break;
         case 4:
-            listar_productos(lista_datos_productos);
+            eliminar_producto(lista_datos_productos);
             break;
         case 5:
-
+            borrar_pantalla();
+            listar_productos(lista_datos_productos);
+            break;
+        case 6:
+            printf("\nSaliendo del menu Admin de Productos\n");
+            frenar();
             break;
         default:
             invalida();
@@ -265,6 +364,7 @@ int imprimir_menu_admin()
     printf("Opcion 2: Productos.\n");
     printf("Opcion 3: Facturacion.\n");
     printf("Opcion 4: Volver al Menu de Inicio.\n");
+    printf("Ingresa una opcion: ");
     fflush(stdin);
     scanf("%d", &opcion);
     return opcion;
@@ -293,9 +393,10 @@ int imprimir_menu_admin_productos()
     printf("\nProductos:\n\n");
     printf("Opcion 1: Cargar Productos.\n");
     printf("Opcion 2: Modificar Producto.\n");
-    printf("Opcion 3: Borrar Producto.\n");
-    printf("Opcion 4: Listar Productos.\n");
-    printf("Opcion 5: Volver al Menu admin.\n");
+    printf("Opcion 3: Aumentar Stock.\n");
+    printf("Opcion 4: Borrar Producto.\n");
+    printf("Opcion 5: Listar Productos.\n");
+    printf("Opcion 6: Volver al Menu admin.\n");
     printf("Ingresa una opcion: ");
     fflush(stdin);
     scanf("%d", &opcion);
@@ -420,7 +521,7 @@ void imprimir_cliente( Clientes cliente, int i)
     printf("Rubro: %s\n", cliente.rubro);
     printf("Cantidad de dias sin comprar: ");
     if(cliente.cant_dias_sin_Comprar==-1){ printf("Nunca compro\n"); } else { printf("%d\n", cliente.cant_dias_sin_Comprar); }
-    printf("Cantidad Facturado: $%d\n", cliente.cantidad_facturacion);
+    printf("Cantidad Facturado: $%.2f\n", cliente.cantidad_facturacion);
     printf("Es VIP: ");
     if(cliente.cliente_vip==1) { printf("SI\n"); } else { printf("NO\n"); }
     printf("Direccion\n");
@@ -613,8 +714,6 @@ void listar_clientes_sin_compra(Lista_enlazada_cliente *lista)
     return;
 }
 
-
-
 void lista_clientes_a_archivo(Lista_enlazada_cliente *lista)
 {
     vaciar_archivo(clientes_binario);
@@ -682,7 +781,7 @@ void ingresar_producto(Productos * producto)
 
 void listar_productos(Lista_enlazada_producto *lista)
 {
-    borrar_pantalla();
+    printf("\nLista de Productos\n");
     if (lista->tam == 0)
     {
         printf("\nNo hay Productos\n");
@@ -723,7 +822,7 @@ void modificar_producto(Lista_enlazada_producto * lista)
     else
     {
         int id;
-        printf("Lista de Productos: ");
+        borrar_pantalla();
         listar_productos(lista);
         id = buscar_producto(lista, "Ingrese el ID del producto a editar: ");
         struct Nodo_producto *nodo_actual = lista->cabeza;
@@ -747,6 +846,41 @@ void modificar_producto(Lista_enlazada_producto * lista)
     }
 }
 
+void aumentar_stock(Lista_enlazada_producto * lista)
+{
+    if (lista->tam == 0)
+    {
+        printf("\nNo hay Productos\n");
+        frenar();
+        return;
+    }
+    else
+    {
+        int id, unidades;
+        borrar_pantalla();
+        listar_productos(lista);
+        id = buscar_producto(lista, "Ingrese el ID del producto a aumentar stock: ");
+        struct Nodo_producto *nodo_actual = lista->cabeza;
+        for(int i=0; i<id ; i++)
+        {
+            if(i+1==id)
+            {
+                printf("Cuantas unidades desea aumentar en el Stock: ");
+                scanf("%d", &unidades);
+                nodo_actual->datos.stock+=unidades;
+                lista_productos_a_archivo(lista);
+                printf("\nStock actualizado correctamente\n");
+                break;
+            }
+            else
+            {
+                nodo_actual = nodo_actual->siguiente;
+            }
+        }
+        frenar();
+    }
+}
+
 void eliminar_producto(Lista_enlazada_producto * lista)
 {
     if (lista->tam == 0)
@@ -758,7 +892,7 @@ void eliminar_producto(Lista_enlazada_producto * lista)
     else
     {
         int id;
-        printf("Lista de Productos: ");
+        borrar_pantalla();
         listar_productos(lista);
         id = buscar_producto(lista, "Ingrese el ID del producto a eliminar: ");
         if(id==1)
@@ -949,3 +1083,20 @@ int archivo_existe(char *nombreArchivo)
         return 0;
     }
 }
+
+void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
+{
+    struct Nodo_cliente *nodo_actual = lista->cabeza;
+    for (int i = 0; i < lista->tam; i++)
+    {
+        if(nodo_actual->datos.cant_dias_sin_Comprar!=-1)
+        {
+            nodo_actual->datos.cant_dias_sin_Comprar++;
+        }
+        nodo_actual = nodo_actual->siguiente;
+    }
+    lista_clientes_a_archivo(lista);
+    return;
+}
+
+
