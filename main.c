@@ -6,7 +6,7 @@
 #define VIP 800000
 #define historial_texto "historial_de_compras.txt"
 #define productos_binario "productos.bin"
-
+#define clientes_binario "clientes.bin"
 
 typedef struct
 {
@@ -25,6 +25,19 @@ typedef struct
     int cliente_vip;
 } Clientes;
 
+struct Nodo_cliente
+{
+    Clientes datos;
+    struct Nodo_cliente *siguiente;
+};
+
+typedef struct
+{
+    struct Nodo_cliente *cabeza;
+    struct Nodo_cliente *cola;
+    int tam;
+} Lista_enlazada_cliente;
+
 typedef struct
 {
     char nombre[50];
@@ -42,8 +55,8 @@ struct Nodo_producto
 
 typedef struct
 {
-    struct Nodo_producto *ultimo;
-    struct Nodo_producto *primero;
+    struct Nodo_producto *cabeza;
+    struct Nodo_producto *cola;
     int tam;
 } Lista_enlazada_producto;
 
@@ -55,10 +68,13 @@ int imprimir_menu_admin_productos();
 int imprimir_menu_admin_facturacion();
 
 //Funciones acciones de menu
-void menu_admin(Lista_enlazada_producto * lista);
-
+void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos);
+void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes);
 void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos);
 
+
+//Funciones pantalla clientes
+void cargar_clientes(Lista_enlazada_cliente * lista);
 
 
 //Funciones pantalla productos
@@ -66,13 +82,18 @@ void cargar_productos(Lista_enlazada_producto * lista);
 void imprimir_producto( Productos producto, int i);
 void listar_productos(Lista_enlazada_producto *lista);
 void modificar_producto(Lista_enlazada_producto * lista);
+void ingresar_producto(Productos * producto);
+int buscar_producto(Lista_enlazada_producto * lista, char * mensaje);
+void eliminar_producto(Lista_enlazada_producto * lista);
+void eliminar_producto_cabeza(Lista_enlazada_producto * lista);
+void eliminar_producto_cola(Lista_enlazada_producto * lista);
+void eliminar_producto_medio(Lista_enlazada_producto * lista, int id);
 
 //Lista productos
 void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos);
 struct Nodo_producto *crear_nodo_producto(Productos *datos);
 void lista_productos_a_archivo(Lista_enlazada_producto *lista);
 void archivo_a_lista_productos(Lista_enlazada_producto *lista);
-
 
 //Funciones generales
 void borrar_pantalla();
@@ -86,6 +107,7 @@ int archivo_existe(char *nombreArchivo);
 int main()
 {
     int opcion;
+    Lista_enlazada_cliente *Lista_cliente = (Lista_enlazada_cliente *)calloc(1, sizeof(Lista_enlazada_cliente));
     Lista_enlazada_producto *Lista_producto = (Lista_enlazada_producto *)calloc(1, sizeof(Lista_enlazada_producto));
     archivo_a_lista_productos(Lista_producto);
     do
@@ -98,7 +120,7 @@ int main()
             //Menu clientes
             break;
         case 2:
-            menu_admin(Lista_producto);
+            menu_admin(Lista_cliente, Lista_producto);
             break;
         case 3:
             cerrar_programa();
@@ -108,22 +130,22 @@ int main()
             break;
         }
     }while (opcion != 3);
-
+    free(Lista_cliente);
     free(Lista_producto);
     return 0;
 }
 
-void menu_admin(Lista_enlazada_producto * lista_datos_productos)
+void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos)
 {
     int opcion=0;
-    while (opcion != 8)
+    while (opcion != 4)
     {
         borrar_pantalla();
         opcion = imprimir_menu_admin();
         switch (opcion)
         {
         case 1:
-
+            menu_admin_clientes(lista_datos_clientes);
             break;
         case 2:
             menu_admin_productos(lista_datos_productos);
@@ -133,6 +155,43 @@ void menu_admin(Lista_enlazada_producto * lista_datos_productos)
             break;
         case 4:
 
+            break;
+        default:
+            invalida();
+            break;
+        }
+    }
+}
+
+void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
+{
+    int opcion=0;
+    while (opcion != 7)
+    {
+        borrar_pantalla();
+        opcion = imprimir_menu_admin_clientes();
+        switch (opcion)
+        {
+        case 1:
+            cargar_clientes(lista_datos_clientes);
+            break;
+        case 2:
+            //Opcion 2: Modificar Cliente.
+            break;
+        case 3:
+            //Opcion 3: Borrar Cliente.
+            break;
+        case 4:
+            //Opcion 4: Listar Clientes.
+            break;
+        case 5:
+            //Opcion 5: Listar Clientes VIP.
+            break;
+        case 6:
+            //Opcion 6: Listar Clientes sin compras.
+            break;
+        case 7:
+            //Opcion 7: Volver al Menu admin.
             break;
         default:
             invalida();
@@ -157,7 +216,7 @@ void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
             modificar_producto(lista_datos_productos);
             break;
         case 3:
-
+            eliminar_producto(lista_datos_productos);
             break;
         case 4:
             listar_productos(lista_datos_productos);
@@ -245,6 +304,26 @@ int imprimir_menu_admin_facturacion()
     return opcion;
 }
 
+void cargar_clientes(Lista_enlazada_cliente * lista)
+{
+    char opcion = 'S';
+    Productos * cliente = malloc(sizeof(Clientes));
+
+    while (toupper(opcion) == 'S')
+    {
+        borrar_pantalla();
+        //ingresar_producto(producto);
+        //producto->vendidos=0;
+        //insertar_nodo_producto(lista, producto);
+        //printf("\n\nQuiere ingresar otro producto (S / N): ");
+        //fflush(stdin);
+        //scanf(" %c", &opcion);
+    }
+    //lista_productos_a_archivo(lista);
+
+}
+
+
 void cargar_productos(Lista_enlazada_producto * lista)
 {
     char opcion = 'S';
@@ -253,27 +332,30 @@ void cargar_productos(Lista_enlazada_producto * lista)
     while (toupper(opcion) == 'S')
     {
         borrar_pantalla();
-        printf("Nombre del producto: ");
-        fflush(stdin);
-        gets(producto->nombre);
-        printf("\nDescripcion del producto: ");
-        fflush(stdin);
-        gets(producto->descripcion);
-        printf("\nPrecio del producto: ");
-        fflush(stdin);
-        scanf("%f", &producto->precio);
-        printf("\nStock del producto: ");
-        fflush(stdin);
-        scanf("%d", &producto->stock);
+        ingresar_producto(producto);
         producto->vendidos=0;
-
         insertar_nodo_producto(lista, producto);
-
         printf("\n\nQuiere ingresar otro producto (S / N): ");
         fflush(stdin);
         scanf(" %c", &opcion);
     }
     lista_productos_a_archivo(lista);
+}
+
+void ingresar_producto(Productos * producto)
+{
+    printf("Nombre del producto: ");
+    fflush(stdin);
+    gets(producto->nombre);
+    printf("Descripcion del producto: ");
+    fflush(stdin);
+    gets(producto->descripcion);
+    printf("Precio del producto: ");
+    fflush(stdin);
+    scanf("%f", &producto->precio);
+    printf("Stock del producto: ");
+    fflush(stdin);
+    scanf("%d", &producto->stock);
 }
 
 void listar_productos(Lista_enlazada_producto *lista)
@@ -285,12 +367,12 @@ void listar_productos(Lista_enlazada_producto *lista)
         frenar();
         return;
     }
-    struct Nodo_producto *nodo_actual = lista->ultimo;
+    struct Nodo_producto *nodo_actual = lista->cabeza;
 
     for (int i = 0; i < lista->tam; i++)
     {
         imprimir_producto(nodo_actual->datos, i);
-        frenar();
+        //frenar();
         nodo_actual = nodo_actual->siguiente;
     }
     printf("\nFin de los productos\n");
@@ -310,25 +392,136 @@ void imprimir_producto( Productos producto, int i)
 
 void modificar_producto(Lista_enlazada_producto * lista)
 {
-    printf("Lista de Productos: ");
-    listar_productos(lista);
-    printf("sdgs");
-    frenar();
+    if (lista->tam == 0)
+    {
+        printf("\nNo hay Productos\n");
+        frenar();
+        return;
+    }
+    else
+    {
+        int id;
+        printf("Lista de Productos: ");
+        listar_productos(lista);
+        id = buscar_producto(lista, "Ingrese el ID del producto a editar: ");
+        struct Nodo_producto *nodo_actual = lista->cabeza;
+        for(int i=0; i<id ; i++)
+        {
+            if(i+1==id)
+            {
+                imprimir_producto(nodo_actual->datos, i);
+                printf("\nIngrese los nuevos datos\n");
+                ingresar_producto(&nodo_actual->datos);
+                lista_productos_a_archivo(lista);
+                printf("\nProducto actualizado correctamente\n");
+            }
+            else
+            {
+                nodo_actual = nodo_actual->siguiente;
+            }
+        }
+        frenar();
+    }
+
 }
 
+void eliminar_producto(Lista_enlazada_producto * lista)
+{
+    if (lista->tam == 0)
+    {
+        printf("\nNo hay Productos\n");
+        frenar();
+        return;
+    }
+    else
+    {
+        int id;
+        printf("Lista de Productos: ");
+        listar_productos(lista);
+        id = buscar_producto(lista, "Ingrese el ID del producto a eliminar: ");
+        if(id==1)
+        {
+            eliminar_producto_cabeza(lista);
+        }
+        else if (id==lista->tam)
+        {
+            eliminar_producto_cola(lista);
+        }
+        else
+        {
+            eliminar_producto_medio(lista, id);
+        }
+
+        lista_productos_a_archivo(lista);
+        printf("\nProducto borrado correctamente");
+        frenar();
+    }
+}
+
+void eliminar_producto_cabeza(Lista_enlazada_producto * lista)
+{
+    struct Node *segundo_nodo = lista->cabeza->siguiente;
+
+    lista->cabeza = segundo_nodo;
+    lista->tam--;
+    //free(lista->cabeza->siguiente);
+    return;
+}
+
+void eliminar_producto_cola(Lista_enlazada_producto * lista)
+{
+    struct Nodo_producto *nodo_actual = lista->cabeza;
+    for (int i = 1; i < lista->tam; i++)
+    {
+        nodo_actual = nodo_actual->siguiente;
+    }
+    nodo_actual->siguiente = NULL;
+    lista->cola = nodo_actual;
+    lista->tam--;
+    return;
+}
+
+void eliminar_producto_medio(Lista_enlazada_producto * lista, int id)
+{
+    struct Nodo_producto *nodo_actual = lista->cabeza;
+    struct Nodo_producto *nodo_anterior = NULL;
+    for (int i = 1; i < id; i++)
+    {
+        nodo_anterior = nodo_actual;
+        nodo_actual = nodo_actual->siguiente;
+    }
+    nodo_anterior->siguiente = nodo_actual->siguiente;
+    lista->tam--;
+    return;
+}
+
+int buscar_producto(Lista_enlazada_producto * lista, char * mensaje)
+{
+    int id=lista->tam+1;
+    while(id>(lista->tam))
+    {
+        printf("\n%s", mensaje);
+        scanf("%d", &id);
+        if(id>(lista->tam))
+        {
+            invalida();
+        }
+    }
+    return id;
+}
 
 void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos)
 {
     struct Nodo_producto *nuevo_nodo = crear_nodo_producto(datos);
     if (lista->tam == 0) // Primera Insercion
     {
-        lista->ultimo = nuevo_nodo;
-        lista->primero = nuevo_nodo;
+        lista->cabeza = nuevo_nodo;
+        lista->cola = nuevo_nodo;
     }
     else
     {
-        nuevo_nodo->siguiente = lista->ultimo;
-        lista->ultimo = nuevo_nodo;
+        lista->cola->siguiente = nuevo_nodo;
+        lista->cola = nuevo_nodo;
     }
     lista->tam++;
     return;
@@ -349,8 +542,6 @@ struct Nodo_producto *crear_nodo_producto(Productos *datos)
 
     return nuevo_nodo;
 }
-
-
 
 void borrar_pantalla()
 {
@@ -392,7 +583,7 @@ void lista_productos_a_archivo(Lista_enlazada_producto *lista)
 {
     vaciar_archivo(productos_binario);
     FILE * archivo = abrir_archivo(productos_binario, "ab");
-    struct Nodo_producto *nodo_actual = lista->ultimo;
+    struct Nodo_producto *nodo_actual = lista->cabeza;
     Productos prod;
     for (int i = 0; i < lista->tam; i++)
     {
