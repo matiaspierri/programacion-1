@@ -143,12 +143,6 @@ int main()
     do
     {
         borrar_pantalla();
-        time_t t;
-                    struct tm *info_tiempo;
-                    time(&t);
-                    info_tiempo = localtime(&t);
-                    printf("\n%02d:%02d:%02d", info_tiempo->tm_year+1900 ,info_tiempo->tm_mday, info_tiempo->tm_mon+1);
-                    printf("\n%02d:%02d:%02d\n", info_tiempo->tm_hour, info_tiempo->tm_min, info_tiempo->tm_sec);
         opcion = imprimir_menu_principal();
         switch (opcion)
         {
@@ -256,7 +250,12 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                     ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
 
 
-
+                    time_t t;
+                    struct tm *info_tiempo;
+                    time(&t);
+                    info_tiempo = localtime(&t);
+                    printf("\n%02d:%02d:%02d", info_tiempo->tm_year+1900 ,info_tiempo->tm_mday, info_tiempo->tm_mon+1);
+                    printf("\n%02d:%02d:%02d\n", info_tiempo->tm_hour, info_tiempo->tm_min, info_tiempo->tm_sec);
 
                     if(toupper(respuesta)=='S')
                     {
