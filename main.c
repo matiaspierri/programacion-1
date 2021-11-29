@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <time.h>
 
 #define VIP 800000
 #define productos_binario "productos.bin"
 #define clientes_binario "clientes.bin"
+#define tickets_binario "tickets.bin"
 
 typedef struct
 {
@@ -58,6 +59,16 @@ typedef struct
     struct Nodo_producto *cola;
     int tam;
 } Lista_enlazada_producto;
+
+typedef struct
+{
+    char cliente[100];
+    char producto[100];
+    char dia[100];
+    char hora[100];
+    float monto;
+    int pago_vip;
+}Tickets;
 
 //Funciones de imprimir menu
 int imprimir_menu_principal();
@@ -132,6 +143,12 @@ int main()
     do
     {
         borrar_pantalla();
+        time_t t;
+                    struct tm *info_tiempo;
+                    time(&t);
+                    info_tiempo = localtime(&t);
+                    printf("\n%02d:%02d:%02d", info_tiempo->tm_year+1900 ,info_tiempo->tm_mday, info_tiempo->tm_mon+1);
+                    printf("\n%02d:%02d:%02d\n", info_tiempo->tm_hour, info_tiempo->tm_min, info_tiempo->tm_sec);
         opcion = imprimir_menu_principal();
         switch (opcion)
         {
@@ -173,7 +190,8 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
     }
     else
     {
-        int id_cliente, id_producto, cantidad;
+        int id_cliente, id_producto, cantidad, contador = 1;
+        float facturacion_por_venta = 0;
         char respuesta='S';
         printf("Lista de Clientes: ");
         listar_clientes(lista_datos_clientes);
@@ -183,6 +201,10 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
         {
             if(i+1==id_cliente)
             {
+                Tickets * tickets = malloc(sizeof(Tickets));
+                Tickets * ticket = tickets;
+                FILE * archivo = abrir_archivo(tickets_binario, "ab");
+
                 while(toupper(respuesta)=='S')
                 {
                     borrar_pantalla();
@@ -205,12 +227,13 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                                 if(nodo_actual_cliente->datos.cantidad_facturacion > VIP)
                                 {
                                     nodo_actual_cliente->datos.cliente_vip=1;
-                                    nodo_actual_cliente->datos.cantidad_facturacion += ((float)cantidad * (nodo_actual_producto->datos.precio)) * 0.9;
+                                    facturacion_por_venta = ((float)cantidad * (nodo_actual_producto->datos.precio)) * 0.9;
                                 }
                                 else
                                 {
-                                    nodo_actual_cliente->datos.cantidad_facturacion += (float)cantidad * (nodo_actual_producto->datos.precio);
+                                    facturacion_por_venta = (float)cantidad * (nodo_actual_producto->datos.precio);
                                 }
+                                nodo_actual_cliente->datos.cantidad_facturacion += facturacion_por_venta;
                                 printf("\nProducto comprado correctamente\n");
                             }
                             else
@@ -227,7 +250,34 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                     printf("\nDesea realizar otra compra S/N: ");
                     fflush(stdin);
                     scanf(" %c", &respuesta);
+                    strcpy(ticket->cliente, nodo_actual_cliente->datos.razon_social);
+                    strcpy(ticket->producto, nodo_actual_producto->datos.nombre);
+                    ticket->monto = facturacion_por_venta;
+                    ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
+
+
+
+
+                    if(toupper(respuesta)=='S')
+                    {
+                        contador++;
+
+                        Tickets * variable_temporal = realloc(tickets, sizeof(Tickets) * contador);
+
+                        if (variable_temporal == NULL)
+                        {
+                            printf("\n\nError al realocar memoria. Revise el programa.\n\n");
+                            frenar();
+                            exit(-1);
+                        }
+                        tickets = variable_temporal;
+                        ticket = variable_temporal + contador + 1;
+                    }
                 }
+                fwrite(tickets , sizeof(Tickets), contador, archivo);
+                free(tickets);
+                fclose(archivo);
+
                 break;
             }
             else
@@ -235,6 +285,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                 nodo_actual_cliente = nodo_actual_cliente->siguiente;
             }
         }
+
         lista_clientes_a_archivo(lista_datos_clientes);
         lista_productos_a_archivo(lista_datos_productos);
     }
@@ -865,7 +916,7 @@ void aumentar_stock(Lista_enlazada_producto * lista)
         {
             if(i+1==id)
             {
-                printf("Cuantas unidades desea aumentar en el Stock: ");
+                printf("\nCuantas unidades desea aumentar en el Stock: ");
                 scanf("%d", &unidades);
                 nodo_actual->datos.stock+=unidades;
                 lista_productos_a_archivo(lista);
