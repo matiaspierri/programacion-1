@@ -205,7 +205,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
     }
     else
     {
-        int id_cliente, id_producto, cantidad, contador = 1;
+        int id_cliente, id_producto, cantidad=0, contador = 1;
         float facturacion_por_venta = 0;
         char respuesta='S';
         printf("Lista de Clientes: ");
@@ -232,47 +232,48 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                     {
                         if(i+1==id_producto)
                         {
-                            printf("\nCuantas Unidades desea comprar: ");
-                            scanf("%d", &cantidad);
-                            if( cantidad <= nodo_actual_producto->datos.stock )
+                            do
                             {
-                                nodo_actual_producto->datos.stock = nodo_actual_producto->datos.stock - cantidad;
-                                nodo_actual_producto->datos.vendidos += cantidad;
-                                nodo_actual_cliente->datos.cant_dias_sin_Comprar=0;
-                                if(nodo_actual_cliente->datos.cantidad_facturacion > VIP)
+                                printf("\nCuantas Unidades desea comprar: ");
+                                scanf("%d", &cantidad);
+                                if(cantidad>nodo_actual_producto->datos.stock)
                                 {
-                                    nodo_actual_cliente->datos.cliente_vip=1;
-                                    facturacion_por_venta = ((float)cantidad * (nodo_actual_producto->datos.precio)) * 0.9;
+                                    printf("\nStock Insuficiente\n");
                                 }
-                                else
-                                {
-                                    facturacion_por_venta = (float)cantidad * (nodo_actual_producto->datos.precio);
-                                }
-                                nodo_actual_cliente->datos.cantidad_facturacion += facturacion_por_venta;
-                                printf("\nProducto comprado correctamente\n");
-                                time_t t;
-                                struct tm *info_tiempo;
-                                time(&t);
-                                info_tiempo = localtime(&t);
-                                strcpy(ticket->cliente, nodo_actual_cliente->datos.razon_social);
-                                strcpy(ticket->producto, nodo_actual_producto->datos.nombre);
-                                ticket->monto = facturacion_por_venta;
-                                ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
-                                ticket->fecha.anio = info_tiempo->tm_year+1900;
-                                ticket->fecha.mes = info_tiempo->tm_mon+1;
-                                ticket->fecha.dia = info_tiempo->tm_mday;
-                                ticket->fecha.hora = info_tiempo->tm_hour;
-                                ticket->fecha.minuto = info_tiempo->tm_min;
-                                ticket->fecha.segundo = info_tiempo->tm_sec;
+                            }while( cantidad > nodo_actual_producto->datos.stock );
 
-                                printf("\n**********Su ticket**********\n");
-                                imprimir_ticket(ticket);
+                            nodo_actual_producto->datos.stock = nodo_actual_producto->datos.stock - cantidad;
+                            nodo_actual_producto->datos.vendidos += cantidad;
+                            nodo_actual_cliente->datos.cant_dias_sin_Comprar=0;
+
+                            if(nodo_actual_cliente->datos.cantidad_facturacion > VIP)
+                            {
+                                nodo_actual_cliente->datos.cliente_vip=1;
+                                facturacion_por_venta = ((float)cantidad * (nodo_actual_producto->datos.precio)) * 0.9;
                             }
                             else
                             {
-                                printf("\nStock Insuficiente\n");
+                                facturacion_por_venta = (float)cantidad * (nodo_actual_producto->datos.precio);
                             }
-                            break;
+                            nodo_actual_cliente->datos.cantidad_facturacion += facturacion_por_venta;
+                            printf("\nProducto comprado correctamente\n");
+                            time_t t;
+                            struct tm *info_tiempo;
+                            time(&t);
+                            info_tiempo = localtime(&t);
+                            strcpy(ticket->cliente, nodo_actual_cliente->datos.razon_social);
+                            strcpy(ticket->producto, nodo_actual_producto->datos.nombre);
+                            ticket->monto = facturacion_por_venta;
+                            ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
+                            ticket->fecha.anio = info_tiempo->tm_year+1900;
+                            ticket->fecha.mes = info_tiempo->tm_mon+1;
+                            ticket->fecha.dia = info_tiempo->tm_mday;
+                            ticket->fecha.hora = info_tiempo->tm_hour;
+                            ticket->fecha.minuto = info_tiempo->tm_min;
+                            ticket->fecha.segundo = info_tiempo->tm_sec;
+
+                            printf("\n**********Su ticket**********\n");
+                            imprimir_ticket(ticket);
                         }
                         else
                         {
@@ -287,9 +288,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                     if(toupper(respuesta)=='S')
                     {
                         contador++;
-
                         Tickets * variable_temporal = realloc(tickets, sizeof(Tickets) * contador);
-
                         if (variable_temporal == NULL)
                         {
                             printf("\n\nError al realocar memoria. Revise el programa.\n\n");
@@ -297,7 +296,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                             exit(-1);
                         }
                         tickets = variable_temporal;
-                        ticket = variable_temporal + contador + 1;
+                        ticket = variable_temporal + contador - 1;
                     }
                 }
                 fwrite(tickets , sizeof(Tickets), contador, archivo);
@@ -1125,7 +1124,7 @@ struct Nodo_producto *crear_nodo_producto(Productos *datos)
 void producto_mas_vendido(Lista_enlazada_producto * lista)
 {
     borrar_pantalla();
-    int max=0, id=0;
+    int max=0, id=0, mayor=0;
     if (lista->tam == 0)
     {
         printf("\nNo hay Productos\n");
@@ -1136,8 +1135,9 @@ void producto_mas_vendido(Lista_enlazada_producto * lista)
 
     for (int i = 0; i < lista->tam; i++)
     {
-        if(max<nodo_actual->datos.vendidos)
+        if( max<nodo_actual->datos.vendidos && nodo_actual->datos.vendidos!=0 )
         {
+            mayor=1;
             id=i;
             max=nodo_actual->datos.vendidos;
         }
@@ -1146,12 +1146,19 @@ void producto_mas_vendido(Lista_enlazada_producto * lista)
 
     struct Nodo_producto *nodo_actual2 = lista->cabeza;
 
-    for (int j = 0; j < id; j++)
+    if(mayor==1)
     {
-        nodo_actual2 = nodo_actual2->siguiente;
+        for (int j = 0; j < id; j++)
+        {
+            nodo_actual2 = nodo_actual2->siguiente;
+        }
+        printf("\nEl producto mas vendido es \n");
+        imprimir_producto(nodo_actual2->datos, id);
     }
-    printf("\nEl producto mas vendido es \n");
-    imprimir_producto(nodo_actual2->datos, id);
+    else
+    {
+        printf("\nNo se han realizado ventas\n");
+    }
 
     free(nodo_actual2);
     free(nodo_actual);
