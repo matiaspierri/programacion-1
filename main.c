@@ -802,7 +802,7 @@ void listar_clientes_vip(Lista_enlazada_cliente *lista)
 
 void listar_clientes_sin_compra(Lista_enlazada_cliente *lista)
 {
-    int c=0;
+    int c=0, dias;
     borrar_pantalla();
     if (lista->tam == 0)
     {
@@ -811,10 +811,12 @@ void listar_clientes_sin_compra(Lista_enlazada_cliente *lista)
         return;
     }
     struct Nodo_cliente *nodo_actual = lista->cabeza;
-    printf("\nLista clientes Sin Compras\n");
+    printf("Ingrese la cantidad minima dias sin comprar a buscar: ");
+    scanf("%d", &dias);
+    printf("\nLista clientes Sin Comprar\n");
     for (int i = 0; i < lista->tam; i++)
     {
-        if(nodo_actual->datos.cant_dias_sin_Comprar==-1)
+        if(nodo_actual->datos.cant_dias_sin_Comprar>dias)
         {
             c=1;
             imprimir_cliente(nodo_actual->datos, i);
