@@ -147,7 +147,7 @@ void frenar();
 void cerrar_programa();
 void invalida();
 FILE * abrir_archivo(char * nombre_archivo, char * modo);
-void vaciar_archivo(char *nombreArchivo);
+
 int archivo_existe(char *nombreArchivo);
 void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista);
 void imprimir_ticket(Tickets * datos);
@@ -911,8 +911,8 @@ void listar_clientes_sin_compra(Lista_enlazada_cliente *lista)
 */
 void lista_clientes_a_archivo(Lista_enlazada_cliente *lista)
 {
-    vaciar_archivo(clientes_binario);
-    FILE * archivo = abrir_archivo(clientes_binario, "ab");
+    
+    FILE * archivo = abrir_archivo(clientes_binario, "wb");
     struct Nodo_cliente *nodo_actual = lista->cabeza;
     for (int i = 0; i < lista->tam; i++)
     {
@@ -1472,9 +1472,9 @@ FILE * abrir_archivo(char * nombre_archivo, char * modo)
 
 void lista_productos_a_archivo(Lista_enlazada_producto *lista)
 {
-    // Limpiamos el binario de productos
-    vaciar_archivo(productos_binario);
-    FILE * archivo = abrir_archivo(productos_binario, "ab");
+    
+    
+    FILE * archivo = abrir_archivo(productos_binario, "wb");
     struct Nodo_producto *nodo_actual = lista->cabeza;
 
     // Recorremos la lista
@@ -1511,12 +1511,6 @@ void archivo_a_lista_productos(Lista_enlazada_producto *lista)
     }
 }
 
-void vaciar_archivo(char *nombreArchivo)
-{
-    // Abrimos el archivo en modo Write para limpiarlo 
-    FILE *archivo=abrir_archivo(nombreArchivo, "w");
-    fclose(archivo);
-}
 
 int archivo_existe(char *nombreArchivo)
 {
