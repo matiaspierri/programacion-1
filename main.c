@@ -107,7 +107,9 @@ void eliminar_cliente_cabeza(Lista_enlazada_cliente * lista);
 void eliminar_cliente_cola(Lista_enlazada_cliente * lista);
 void eliminar_cliente_medio(Lista_enlazada_cliente * lista, int id);
 void listar_clientes_vip(Lista_enlazada_cliente *lista);
-void listar_clientes_sin_compra(Lista_enlazada_cliente * lista);
+void listar_clientes_sin_compra_fecha(Lista_enlazada_cliente * lista);
+void listar_clientes_sin_compra(Lista_enlazada_cliente *lista);
+
 
 //Funciones lista clientes
 void insertar_nodo_cliente(Lista_enlazada_cliente *lista, Clientes *datos);
@@ -416,9 +418,13 @@ void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
             listar_clientes_vip(lista_datos_clientes);
             break;
         case 6:
-            listar_clientes_sin_compra(lista_datos_clientes);
+            listar_clientes_sin_compra_fecha(lista_datos_clientes);
             break;
         case 7:
+            listar_clientes_sin_compra(lista_datos_clientes);
+            break;
+
+        case 8:
             printf("\nSaliendo del menu Admin de clientes\n");
             frenar();
             break;
@@ -538,8 +544,9 @@ int imprimir_menu_admin_clientes()
     printf("Opcion 3: Borrar Cliente.\n");
     printf("Opcion 4: Listar Clientes.\n");
     printf("Opcion 5: Listar Clientes VIP.\n");
-    printf("Opcion 6: Listar Clientes sin compras.\n");
-    printf("Opcion 7: Volver al Menu admin.\n");
+    printf("Opcion 6: Listar Clientes sin compras segun fecha.\n");
+    printf("Opcion 7: Listar Clientes sin compras.\n");
+    printf("Opcion 8: Volver al Menu admin.\n");
     printf("Ingresa una opcion: ");
     fflush(stdin);
     scanf("%d", &opcion);
@@ -870,7 +877,7 @@ void listar_clientes_vip(Lista_enlazada_cliente *lista)
     Listamos los clientes que no tienen comprar segun
     la cantidad de dias que quiere ver el usuario
 */
-void listar_clientes_sin_compra(Lista_enlazada_cliente *lista)
+void listar_clientes_sin_compra_fecha(Lista_enlazada_cliente *lista)
 {
     int c=0, dias;
     borrar_pantalla();
@@ -1680,4 +1687,37 @@ int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
 
     // Devuelvo la diferencia de dias entre las dos fechas
 	return dias2-dias1;
+}
+
+void listar_clientes_sin_compra(Lista_enlazada_cliente *lista){
+    int c=0;
+    borrar_pantalla();
+    if (lista->tam == 0)
+    {
+        printf("\nNo hay Clientes\n");
+        frenar();
+        return;
+    }
+    struct Nodo_cliente *nodo_actual = lista->cabeza;
+    printf("\nLista clientes sin comprar\n");
+    for (int i = 0; i < lista->tam; i++)
+    {
+        if(nodo_actual->datos.cant_dias_sin_Comprar==-1)
+        {
+            c=1;
+            imprimir_cliente(nodo_actual->datos, i);
+        }
+        nodo_actual = nodo_actual->siguiente;
+    }
+    if(c==1)
+    {
+        printf("\nFin de los clientes\n");
+    }
+    else
+    {
+        printf("\nNo hay clientes sin compras\n");
+    }
+    frenar();
+    return;
+
 }
