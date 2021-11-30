@@ -433,7 +433,7 @@ void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
 void menu_admin_facturacion(Lista_enlazada_cliente * lista_datos_cliente, Lista_enlazada_producto * lista_datos_producto)
 {
     int opcion=0;
-    while (opcion != 6)
+    while (opcion != 5)
     {
         borrar_pantalla();
         opcion = imprimir_menu_admin_facturacion();
@@ -449,12 +449,9 @@ void menu_admin_facturacion(Lista_enlazada_cliente * lista_datos_cliente, Lista_
             //Opcion 3: Facturacion de Hoy.
             break;
         case 4:
-            //Opcion 4: Facturacion Historica.
+            facturacion_historica();
             break;
         case 5:
-            //Opcion 5: Volver al Menu admin.
-            break;
-        case 6:
             printf("\nSaliendo del menu Admin de Facturacion\n");
             frenar();
             break;
@@ -1157,9 +1154,30 @@ void producto_mas_vendido(Lista_enlazada_producto * lista)
     return;
 }
 
-
-
-
+void facturacion_historica()
+{
+    if(archivo_existe(tickets_binario) == 1)
+    {
+        borrar_pantalla();
+        int i=0;
+        float facturacion=0;
+        FILE *archivo=abrir_archivo(tickets_binario, "rb");
+        Tickets *ticket = malloc(sizeof(Tickets));
+        fseek(archivo, 0, SEEK_SET);
+        fread(ticket, sizeof(Tickets), 1, archivo);
+        while(!feof(archivo))
+        {
+            i++;
+            printf("\nTicket N%d\n", i);
+            imprimir_ticket(ticket);
+            facturacion+=ticket->monto;
+            fread(ticket, sizeof(Tickets), 1, archivo);
+        }
+        printf("\nLa facturacion historica de la empresa es: %.2f\n", facturacion);
+        frenar();
+        free(ticket);
+    }
+}
 
 
 void borrar_pantalla()
