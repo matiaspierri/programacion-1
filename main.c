@@ -157,14 +157,24 @@ int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2);
 int main()
 {
     int opcion;
+
+    // Creo las listas enlazadas para guardar clientes y productos
     Lista_enlazada_cliente *Lista_cliente = (Lista_enlazada_cliente *)calloc(1, sizeof(Lista_enlazada_cliente));
     Lista_enlazada_producto *Lista_producto = (Lista_enlazada_producto *)calloc(1, sizeof(Lista_enlazada_producto));
+    
+    // Leo los archivos binarios y cargo las listas
     archivo_a_lista_productos(Lista_producto);
     archivo_a_lista_clientes(Lista_cliente);
+
     do
     {
+        // Accedo a la fecha de la PC y aumento la fecha
         aumentar_dias_sin_compra(Lista_cliente);
+
+
         borrar_pantalla();
+        
+        // Muestro al usuario el menu principal y guardo su opcion
         opcion = imprimir_menu_principal();
         switch (opcion)
         {
@@ -182,6 +192,8 @@ int main()
             break;
         }
     }while (opcion != 3);
+
+    // Libero memoria
     free(Lista_cliente);
     free(Lista_producto);
     return 0;
@@ -1349,11 +1361,17 @@ int archivo_existe(char *nombreArchivo)
     }
 }
 
+
+
 void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
 {
     int dias = 0;
     if(archivo_existe(fecha_binario))
     {
+        /* 
+            Si tenemos un archivo binario con fecha procedemos a abrirlo
+            y calcular la diferencia de fechas
+        */
         FILE * archivo = abrir_archivo(fecha_binario, "r+b");
         Fecha *fecha1 = malloc(sizeof(Fecha));
         fseek(archivo, 0, SEEK_SET);
@@ -1380,6 +1398,11 @@ void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
     }
     else
     {
+        /* 
+            Si no tenemos un archivo binario con fecha 
+            procedemos a generarlo para comparar si cambio de dia 
+            o no
+        */
         FILE * archivo = abrir_archivo(fecha_binario, "wb");
         Fecha *fecha1 = malloc(sizeof(Fecha));
 
@@ -1398,8 +1421,13 @@ void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
         fclose(archivo);
     }
 
+    
     if(fabs(dias)>0)
     {
+        /*
+            Si la diferencia entre dias es mayor a 0, es decir que paso un dia, procedemos 
+            a aumentar la cantidad de dias sin comprar del cliente
+        */
         struct Nodo_cliente *nodo_actual = lista->cabeza;
         for (int i = 0; i < lista->tam; i++)
         {
@@ -1414,6 +1442,7 @@ void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
     }
 }
 
+
 int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
 {
     int bisiesto[12]={31,29,31,30,31,30,31,31,30,31,30,31};
@@ -1421,6 +1450,11 @@ int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
     int i,j;
 	int dias1,dias2;
 	dias1=dias2=0;
+
+    /* 
+        Realizamos todas las tranformaciones necesarias
+        para pasar las fechas a dias y guardamos ese valor
+    */
 	for(i=1; i<fecha1->anio;i++)
 	{
         if((i%4==0&&i%400!=0)||(i%100==0))
@@ -1444,6 +1478,13 @@ int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
         }
 	}
 	dias1=(fecha1->anio-1)*365+dias1+dia_mes1+fecha1->dia;
+
+
+    /* 
+        Realizamos todas las tranformaciones necesarias
+        para pasar las fechas a dias y guardamos ese valor
+    */
+
 	for( i=1; i<fecha2->anio;i++)
 	{
         if((i%4==0&&i%400!=0)||(i%100==0))
@@ -1467,5 +1508,7 @@ int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
         }
 	}
 	dias2=(fecha2->anio-1)*365+dias2+dia_mes2+fecha2->dia;
+
+    // Devuelvo la diferencia de dias entre las dos fechas
 	return dias2-dias1;
 }
