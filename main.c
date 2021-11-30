@@ -274,7 +274,6 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                             // el monto total
                             if(nodo_actual_cliente->datos.cantidad_facturacion > VIP)
                             {
-                                nodo_actual_cliente->datos.cliente_vip=1;
                                 facturacion_por_venta = ((float)cantidad * (nodo_actual_producto->datos.precio)) * 0.9;
                             }
                             else
@@ -282,6 +281,10 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                                 facturacion_por_venta = (float)cantidad * (nodo_actual_producto->datos.precio);
                             }
                             nodo_actual_cliente->datos.cantidad_facturacion += facturacion_por_venta;
+                            if(nodo_actual_cliente->datos.cantidad_facturacion > VIP)
+                            {
+                                nodo_actual_cliente->datos.cliente_vip==1;
+                            }
                             printf("\nProducto comprado correctamente\n");
 
                             // Guardamos la fecha y hora local
