@@ -199,6 +199,7 @@ int main()
     return 0;
 }
 
+// Menu de cliente
 void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos)
 {
     if (lista_datos_clientes->tam == 0)
@@ -224,6 +225,8 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
         listar_clientes(lista_datos_clientes);
         id_cliente = buscar_cliente(lista_datos_clientes, "Ingrese el ID del cliente a Realizar compra: ");
         struct Nodo_cliente *nodo_actual_cliente = lista_datos_clientes->cabeza;
+
+        // Iniciamos al compra
         for(int i=0; i<id_cliente ; i++)
         {
             if(i+1==id_cliente)
@@ -236,7 +239,11 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                 {
                     borrar_pantalla();
                     imprimir_cliente(nodo_actual_cliente->datos, i);
+                    
+                    // Mostramos los productos para comprar
                     listar_productos(lista_datos_productos);
+
+                    // Guardamos la eleccion del cliente
                     id_producto = buscar_producto(lista_datos_productos, "Ingrese el ID del producto a comprar: ");
                     struct Nodo_producto *nodo_actual_producto = lista_datos_productos->cabeza;
 
@@ -246,6 +253,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                         {
                             do
                             {
+                                // Preguntamos cuantas unidades desea comprar para saber si tenemos stock
                                 printf("\nCuantas Unidades desea comprar: ");
                                 scanf("%d", &cantidad);
                                 if(cantidad>nodo_actual_producto->datos.stock)
@@ -253,11 +261,15 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                                     printf("\nStock Insuficiente\n");
                                 }
                             }while( cantidad > nodo_actual_producto->datos.stock );
+                            
 
+                            // Guardamos la venta 
                             nodo_actual_producto->datos.stock = nodo_actual_producto->datos.stock - cantidad;
                             nodo_actual_producto->datos.vendidos += cantidad;
                             nodo_actual_cliente->datos.cant_dias_sin_Comprar=0;
 
+                            // Si el cliente es VIP le ofrecemos el descuento correspondiente y calculamos
+                            // el monto total
                             if(nodo_actual_cliente->datos.cantidad_facturacion > VIP)
                             {
                                 nodo_actual_cliente->datos.cliente_vip=1;
@@ -269,14 +281,22 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                             }
                             nodo_actual_cliente->datos.cantidad_facturacion += facturacion_por_venta;
                             printf("\nProducto comprado correctamente\n");
+
+                            // Guardamos la fecha y hora local
                             time_t t;
                             struct tm *info_tiempo;
                             time(&t);
                             info_tiempo = localtime(&t);
+
+                            // Copiamos dentro del ticket el producto y cliente
                             strcpy(ticket->cliente, nodo_actual_cliente->datos.razon_social);
                             strcpy(ticket->producto, nodo_actual_producto->datos.nombre);
+
+                            // Guardamos el monto
                             ticket->monto = facturacion_por_venta;
                             ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
+                            
+                            // Guardamos la fecha
                             ticket->fecha.anio = info_tiempo->tm_year+1900;
                             ticket->fecha.mes = info_tiempo->tm_mon+1;
                             ticket->fecha.dia = info_tiempo->tm_mday;
@@ -314,8 +334,6 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                 fwrite(tickets , sizeof(Tickets), contador, archivo);
                 free(tickets);
                 fclose(archivo);
-
-                break;
             }
             else
             {
@@ -328,6 +346,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
     }
 }
 
+// Funcionar para hacer un print de un ticket
 void imprimir_ticket(Tickets * datos)
 {
     printf("\nNombre del Cliente: %s\n", datos->cliente);
@@ -339,6 +358,7 @@ void imprimir_ticket(Tickets * datos)
     printf("Hora: %02d/%02d/%02d\n", datos->fecha.hora, datos->fecha.minuto, datos->fecha.segundo);
 }
 
+// Menu genreral
 void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos)
 {
     int opcion=0;
@@ -369,6 +389,7 @@ void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_pr
     }
 }
 
+// Menu principal de cleintes
 void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
 {
     int opcion=0;
@@ -408,6 +429,7 @@ void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
     }
 }
 
+// Menu principal de productos
 void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
 {
     int opcion=0;
@@ -444,6 +466,7 @@ void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
     }
 }
 
+// Menu principal de facturacion
 void menu_admin_facturacion(Lista_enlazada_producto * lista_datos_producto)
 {
     int opcion=0;
@@ -476,6 +499,7 @@ void menu_admin_facturacion(Lista_enlazada_producto * lista_datos_producto)
     }
 }
 
+// Imprimos el menu y retornamos la opcion elegida
 int imprimir_menu_principal()
 {
     int opcion;
@@ -489,6 +513,7 @@ int imprimir_menu_principal()
     return opcion;
 }
 
+// Imprimos el menu y retornamos la opcion elegida
 int imprimir_menu_admin()
 {
     int opcion;
@@ -503,6 +528,7 @@ int imprimir_menu_admin()
     return opcion;
 }
 
+// Imprimos el menu y retornamos la opcion elegida
 int imprimir_menu_admin_clientes()
 {
     int opcion;
@@ -520,6 +546,7 @@ int imprimir_menu_admin_clientes()
     return opcion;
 }
 
+// Imprimos el menu y retornamos la opcion elegida
 int imprimir_menu_admin_productos()
 {
     int opcion;
@@ -536,6 +563,7 @@ int imprimir_menu_admin_productos()
     return opcion;
 }
 
+// Imprimos el menu y retornamos la opcion elegida
 int imprimir_menu_admin_facturacion()
 {
     int opcion;
@@ -551,6 +579,10 @@ int imprimir_menu_admin_facturacion()
     return opcion;
 }
 
+/*
+    Ingresamos los datos del cliente hasta que el usuario
+    nos diga que no desea cargar nada mas
+*/
 void cargar_clientes(Lista_enlazada_cliente * lista)
 {
     char opcion = 'S';
@@ -572,6 +604,7 @@ void cargar_clientes(Lista_enlazada_cliente * lista)
 
 }
 
+// Insertamos el nodo dentro de la lista 
 void insertar_nodo_cliente(Lista_enlazada_cliente *lista, Clientes *datos)
 {
     struct Nodo_cliente *nuevo_nodo = crear_nodo_cliente(datos);
@@ -589,6 +622,7 @@ void insertar_nodo_cliente(Lista_enlazada_cliente *lista, Clientes *datos)
     return;
 }
 
+// Creamos un nuevo nodo y guaradmos los datos de la estructura cliente dentro
 struct Nodo_cliente *crear_nodo_cliente(Clientes *datos)
 {
     struct Nodo_cliente *nuevo_nodo = (struct Nodo_cliente *)calloc(1, sizeof(struct Nodo_cliente));
@@ -605,6 +639,7 @@ struct Nodo_cliente *crear_nodo_cliente(Clientes *datos)
     return nuevo_nodo;
 }
 
+// Guardamos los datos del cliente
 void ingresar_cliente(Clientes * cliente)
 {
     printf("\nCargar datos del cliente:\n");
@@ -625,6 +660,7 @@ void ingresar_cliente(Clientes * cliente)
     gets(cliente->direccion.piso);
 }
 
+// Funcion para recorrer los clientes y hacer un print
 void listar_clientes(Lista_enlazada_cliente *lista)
 {
     borrar_pantalla();
@@ -647,6 +683,8 @@ void listar_clientes(Lista_enlazada_cliente *lista)
     return;
 }
 
+
+// Funcion para hacer un print del cliente
 void imprimir_cliente( Clientes cliente, int i)
 {
     printf("\nCliente N%d\n", i+1);
@@ -698,6 +736,10 @@ void modificar_cliente(Lista_enlazada_cliente * lista)
     }
 }
 
+/*
+    Ya que ID==Posicion en lista, recorremos la lista hasta llegar al
+    ID que inserto el usuario
+*/
 int buscar_cliente(Lista_enlazada_cliente * lista, char * mensaje)
 {
     int id=lista->tam+1;
@@ -713,6 +755,10 @@ int buscar_cliente(Lista_enlazada_cliente * lista, char * mensaje)
     return id;
 }
 
+/* 
+    Buscamos el cliente que el usuario quiere borrar y 
+    dependiendo de donde se encuentre en la lista decidimos como borrarlo
+*/
 void eliminar_cliente(Lista_enlazada_cliente * lista)
 {
     if (lista->tam == 0)
@@ -745,6 +791,7 @@ void eliminar_cliente(Lista_enlazada_cliente * lista)
         frenar();
     }
 }
+
 
 void eliminar_cliente_cabeza(Lista_enlazada_cliente * lista)
 {
@@ -781,6 +828,10 @@ void eliminar_cliente_medio(Lista_enlazada_cliente * lista, int id)
     return;
 }
 
+/*
+    Recorremos la lista de cliente y mostramos en pantalla
+    los que tengan facturacion == 800.000
+*/
 void listar_clientes_vip(Lista_enlazada_cliente *lista)
 {
     int c=0;
@@ -814,6 +865,11 @@ void listar_clientes_vip(Lista_enlazada_cliente *lista)
     return;
 }
 
+
+/* 
+    Listamos los clientes que no tienen comprar segun
+    la cantidad de dias que quiere ver el usuario
+*/
 void listar_clientes_sin_compra(Lista_enlazada_cliente *lista)
 {
     int c=0, dias;
@@ -849,6 +905,10 @@ void listar_clientes_sin_compra(Lista_enlazada_cliente *lista)
     return;
 }
 
+/* 
+    Recorremos la lista de clientes y vamos guardando la estructura
+    de cada cliente, sin guardar el nodo
+*/
 void lista_clientes_a_archivo(Lista_enlazada_cliente *lista)
 {
     vaciar_archivo(clientes_binario);
@@ -862,10 +922,18 @@ void lista_clientes_a_archivo(Lista_enlazada_cliente *lista)
     fclose(archivo);
 }
 
+
 void archivo_a_lista_clientes(Lista_enlazada_cliente *lista)
 {
+    // Abro el archivo dew clientes
     if(archivo_existe(clientes_binario) == 1)
     {
+
+        /*
+            Recorro el archivo de clientes y voy guardando el dato de cada
+            estructura para luego insertarla en la lista
+        */
+
         FILE *archivo=abrir_archivo(clientes_binario, "rb");
         Clientes *cliente = malloc(sizeof(Clientes));
         fseek(archivo, 0, SEEK_SET);
@@ -879,6 +947,12 @@ void archivo_a_lista_clientes(Lista_enlazada_cliente *lista)
     }
 }
 
+/* 
+    Pedimos al usuario los datos del producto y luego
+    lo insertamos en un nodo de la lista
+    En caso de que el usuario quiera, repetimos este proceso
+    para cargar todos los productos necesarios
+*/
 void cargar_productos(Lista_enlazada_producto * lista)
 {
     char opcion = 'S';
@@ -898,6 +972,7 @@ void cargar_productos(Lista_enlazada_producto * lista)
     lista_productos_a_archivo(lista);
 }
 
+// Solicitamos los datos del producto
 void ingresar_producto(Productos * producto)
 {
     printf("Nombre del producto: ");
@@ -914,6 +989,7 @@ void ingresar_producto(Productos * producto)
     scanf("%d", &producto->stock);
 }
 
+// Recorremos la lista de productos y la imprimimos
 void listar_productos(Lista_enlazada_producto *lista)
 {
     printf("\nLista de Productos\n");
@@ -936,6 +1012,7 @@ void listar_productos(Lista_enlazada_producto *lista)
     return;
 }
 
+// Funcion para hacer un print de producto
 void imprimir_producto( Productos producto, int i)
 {
     printf("\nProducto N%d", i+1);
@@ -948,6 +1025,7 @@ void imprimir_producto( Productos producto, int i)
 
 void modificar_producto(Lista_enlazada_producto * lista)
 {
+    // Verifico si no hay productos
     if (lista->tam == 0)
     {
         printf("\nNo hay Productos\n");
@@ -959,15 +1037,23 @@ void modificar_producto(Lista_enlazada_producto * lista)
         int id;
         borrar_pantalla();
         listar_productos(lista);
+
+        // Pregunto al usuario que producto quiere modificar
         id = buscar_producto(lista, "Ingrese el ID del producto a editar: ");
         struct Nodo_producto *nodo_actual = lista->cabeza;
+
+        // Recorro la lista hasta llegar al producto
         for(int i=0; i<id ; i++)
         {
             if(i+1==id)
             {
+                // Muestro el producto
                 imprimir_producto(nodo_actual->datos, i);
+                
                 printf("\nIngrese los nuevos datos\n");
                 ingresar_producto(&nodo_actual->datos);
+                
+                // Persisto los datos en el archivo
                 lista_productos_a_archivo(lista);
                 printf("\nProducto actualizado correctamente\n");
                 break;
@@ -983,6 +1069,7 @@ void modificar_producto(Lista_enlazada_producto * lista)
 
 void aumentar_stock(Lista_enlazada_producto * lista)
 {
+    // Verifico que haya productos
     if (lista->tam == 0)
     {
         printf("\nNo hay Productos\n");
@@ -994,7 +1081,12 @@ void aumentar_stock(Lista_enlazada_producto * lista)
         int id, unidades;
         borrar_pantalla();
         listar_productos(lista);
+        
+        // Guardo que producto se quiere modificar
         id = buscar_producto(lista, "Ingrese el ID del producto a aumentar stock: ");
+        
+
+        // Recorro la lista hasta llegar al producto seleccionado
         struct Nodo_producto *nodo_actual = lista->cabeza;
         for(int i=0; i<id ; i++)
         {
@@ -1002,6 +1094,8 @@ void aumentar_stock(Lista_enlazada_producto * lista)
             {
                 printf("\nCuantas unidades desea aumentar en el Stock: ");
                 scanf("%d", &unidades);
+
+                // Aumento el stock y lo persisto en el archivo
                 nodo_actual->datos.stock+=unidades;
                 lista_productos_a_archivo(lista);
                 printf("\nStock actualizado correctamente\n");
@@ -1018,6 +1112,7 @@ void aumentar_stock(Lista_enlazada_producto * lista)
 
 void eliminar_producto(Lista_enlazada_producto * lista)
 {
+    // Verifico si hay productos en la lista
     if (lista->tam == 0)
     {
         printf("\nNo hay Productos\n");
@@ -1030,10 +1125,16 @@ void eliminar_producto(Lista_enlazada_producto * lista)
         borrar_pantalla();
         listar_productos(lista);
         id = buscar_producto(lista, "Ingrese el ID del producto a eliminar: ");
+
+        // Notese que ID = Posicion en la lista
+
+        // Si queremos eliminar la cabeza 
         if(id==1)
         {
             eliminar_producto_cabeza(lista);
+        
         }
+        // Si queremos eliminar la cola
         else if (id==lista->tam)
         {
             eliminar_producto_cola(lista);
@@ -1049,6 +1150,7 @@ void eliminar_producto(Lista_enlazada_producto * lista)
     }
 }
 
+// Funcion para eliminar un nodo en caso de estar en la cabeza
 void eliminar_producto_cabeza(Lista_enlazada_producto * lista)
 {
     struct Nodo_producto *segundo_nodo = lista->cabeza->siguiente;
@@ -1058,6 +1160,8 @@ void eliminar_producto_cabeza(Lista_enlazada_producto * lista)
     return;
 }
 
+
+// Funcion para eliminar un nodo en caso de estar en la cola
 void eliminar_producto_cola(Lista_enlazada_producto * lista)
 {
     struct Nodo_producto *nodo_actual = lista->cabeza;
@@ -1071,6 +1175,8 @@ void eliminar_producto_cola(Lista_enlazada_producto * lista)
     return;
 }
 
+
+// Funcion para eliminar un nodo en caso de estar en el medio
 void eliminar_producto_medio(Lista_enlazada_producto * lista, int id)
 {
     struct Nodo_producto *nodo_actual = lista->cabeza;
@@ -1102,7 +1208,11 @@ int buscar_producto(Lista_enlazada_producto * lista, char * mensaje)
 
 void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos)
 {
+    // Creo un nodo con los datos
     struct Nodo_producto *nuevo_nodo = crear_nodo_producto(datos);
+    
+    
+    /* Realizo la insercion del nodo*/
     if (lista->tam == 0) // Primera Insercion
     {
         lista->cabeza = nuevo_nodo;
@@ -1113,12 +1223,16 @@ void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos)
         lista->cola->siguiente = nuevo_nodo;
         lista->cola = nuevo_nodo;
     }
+
+    // Aumento el tamaño de la lista
     lista->tam++;
     return;
 }
 
 struct Nodo_producto *crear_nodo_producto(Productos *datos)
 {
+
+    // Creo el nuevo nodo
     struct Nodo_producto *nuevo_nodo = (struct Nodo_producto *)calloc(1, sizeof(struct Nodo_producto));
 
     if (nuevo_nodo == NULL)
@@ -1126,17 +1240,21 @@ struct Nodo_producto *crear_nodo_producto(Productos *datos)
         printf("Insuficiente Memoria");
         exit(-1);
     }
-
+    
+    // Guardo los datos en el nuevo nodo 
     nuevo_nodo->datos = *datos;
     nuevo_nodo->siguiente = NULL;
 
-    return nuevo_nodo;
+    // Devuelvo el nodo
+    return nuevo_nodo;  
 }
 
 void producto_mas_vendido(Lista_enlazada_producto * lista)
 {
     borrar_pantalla();
     int max=0, id=0, mayor=0;
+    
+    // Verifico si hay productos
     if (lista->tam == 0)
     {
         printf("\nNo hay Productos\n");
@@ -1145,12 +1263,17 @@ void producto_mas_vendido(Lista_enlazada_producto * lista)
     }
     struct Nodo_producto *nodo_actual = lista->cabeza;
 
+    // Recorro la lista de productos
     for (int i = 0; i < lista->tam; i++)
     {
+
+        // Verifico si el valor de vendidos del nodo actual es mayor a mi maximo
         if( max<nodo_actual->datos.vendidos && nodo_actual->datos.vendidos!=0 )
         {
             mayor=1;
             id=i;
+
+            // Guardo el nuevo maximo
             max=nodo_actual->datos.vendidos;
         }
         nodo_actual = nodo_actual->siguiente;
@@ -1158,6 +1281,7 @@ void producto_mas_vendido(Lista_enlazada_producto * lista)
 
     struct Nodo_producto *nodo_actual2 = lista->cabeza;
 
+    
     if(mayor==1)
     {
         for (int j = 0; j < id; j++)
@@ -1180,11 +1304,14 @@ void producto_mas_vendido(Lista_enlazada_producto * lista)
 
 void facturacion_historica()
 {
+    // Si existe el archivo de tickets
     if(archivo_existe(tickets_binario) == 1)
     {
         borrar_pantalla();
         int i=0;
         float facturacion=0;
+
+        // Recorremos el archivo de tickets
         FILE *archivo=abrir_archivo(tickets_binario, "rb");
         Tickets *ticket = malloc(sizeof(Tickets));
         fseek(archivo, 0, SEEK_SET);
@@ -1194,9 +1321,13 @@ void facturacion_historica()
             i++;
             printf("\nTicket N%d\n", i);
             imprimir_ticket(ticket);
+
+            // sumamos la facturacion
             facturacion+=ticket->monto;
             fread(ticket, sizeof(Tickets), 1, archivo);
         }
+
+        // Imprimimos la facturacion historica
         printf("\nLa facturacion historica de la empresa es: %.2f\n", facturacion);
         frenar();
         free(ticket);
@@ -1209,11 +1340,14 @@ void facturacion_historica()
 
 void facturacion_por_dia()
 {
+    // Si existe el binario de tickets
     if(archivo_existe(tickets_binario) == 1)
     {
         borrar_pantalla();
         int i=0, dia, mes, anio;
         float facturacion=0;
+
+        // Pedimos al usuario a partir de que fecha queremos calcular
         printf("\nIngrese el anio: ");
         scanf("%d", &anio);
         printf("\nIngrese el mes: ");
@@ -1221,6 +1355,8 @@ void facturacion_por_dia()
         printf("\nIngrese el dia: ");
         scanf("%d", &dia);
 
+
+        // Recorremos el archivo de tickets
         FILE *archivo=abrir_archivo(tickets_binario, "rb");
         Tickets *ticket = malloc(sizeof(Tickets));
         fseek(archivo, 0, SEEK_SET);
@@ -1228,6 +1364,8 @@ void facturacion_por_dia()
         while(!feof(archivo))
         {
             i++;
+
+            // Si la fecha del ticket concuerda con lo que pidio el usuario
             if(ticket->fecha.anio==anio && ticket->fecha.mes==mes && ticket->fecha.dia==dia)
             {
                 printf("\nTicket N%d\n", i);
@@ -1247,7 +1385,8 @@ void facturacion_por_dia()
 }
 
 void facturacion_hoy()
-{
+{  
+    // Si existe el binario de tickets
     if(archivo_existe(tickets_binario) == 1)
     {
         borrar_pantalla();
@@ -1256,22 +1395,34 @@ void facturacion_hoy()
         time_t t;
         struct tm *info_tiempo;
         time(&t);
+
+        // Obtenemos la fecha de hoy
         info_tiempo = localtime(&t);
         FILE *archivo=abrir_archivo(tickets_binario, "rb");
+
+
+        // Empezamos a recorrer el binario de tickets
         Tickets *ticket = malloc(sizeof(Tickets));
         fseek(archivo, 0, SEEK_SET);
         fread(ticket, sizeof(Tickets), 1, archivo);
         while(!feof(archivo))
         {
             i++;
+
+            // Si la fecha del ticket coincide con el dia de hoy
             if(ticket->fecha.anio==info_tiempo->tm_year+1900 && ticket->fecha.mes==info_tiempo->tm_mon+1 && ticket->fecha.dia==info_tiempo->tm_mday)
             {
+                // Imprimos el ticket
                 printf("\nTicket N%d\n", i);
                 imprimir_ticket(ticket);
+
+                // Sumamos el monto al ticket
                 facturacion+=ticket->monto;
             }
             fread(ticket, sizeof(Tickets), 1, archivo);
         }
+
+        // Imprimimos la facturacion 
         printf("\nLa facturacion de hoy %d/%02d/%02d de la empresa es: %.2f\n", info_tiempo->tm_year+1900, info_tiempo->tm_mon+1, info_tiempo->tm_mday, facturacion);
         frenar();
         free(ticket);
@@ -1295,6 +1446,7 @@ void frenar()
 
 void cerrar_programa()
 {
+    // Cerramos el programar
     borrar_pantalla();
     printf("Usted a cerrado el programa, lo que implica que cerro la caja del local.\n");
     printf("Muchas gracias!!!\nNos vemos pronto....\n");
@@ -1320,12 +1472,18 @@ FILE * abrir_archivo(char * nombre_archivo, char * modo)
 
 void lista_productos_a_archivo(Lista_enlazada_producto *lista)
 {
+    // Limpiamos el binario de productos
     vaciar_archivo(productos_binario);
     FILE * archivo = abrir_archivo(productos_binario, "ab");
     struct Nodo_producto *nodo_actual = lista->cabeza;
+
+    // Recorremos la lista
     for (int i = 0; i < lista->tam; i++)
     {
+        // guardamos los datos del nodo(sin el nodo)
         fwrite(&nodo_actual->datos, sizeof(Productos), 1, archivo);
+
+        // Avanzamos al siguiente nodo 
         nodo_actual = nodo_actual->siguiente;
     }
     fclose(archivo);
@@ -1333,14 +1491,19 @@ void lista_productos_a_archivo(Lista_enlazada_producto *lista)
 
 void archivo_a_lista_productos(Lista_enlazada_producto *lista)
 {
+    // Si existe el archivo binario con lista de productos
     if(archivo_existe(productos_binario) == 1)
     {
+
         FILE *archivo=abrir_archivo(productos_binario, "rb");
         Productos *producto = malloc(sizeof(Productos));
         fseek(archivo, 0, SEEK_SET);
+        
+        // Leemos el producto del archivo binario
         fread(producto, sizeof(Productos), 1, archivo);
         while(!feof(archivo))
         {
+            // Insertamos ese producto en la lista
             insertar_nodo_producto(lista, producto);
             fread(producto, sizeof(Productos), 1, archivo);
         }
@@ -1350,12 +1513,17 @@ void archivo_a_lista_productos(Lista_enlazada_producto *lista)
 
 void vaciar_archivo(char *nombreArchivo)
 {
+    // Abrimos el archivo en modo Write para limpiarlo 
     FILE *archivo=abrir_archivo(nombreArchivo, "w");
     fclose(archivo);
 }
 
 int archivo_existe(char *nombreArchivo)
 {
+    /* 
+        Verificamos si es posible abrir el archivo,
+        devolvemos 1 o 0 para identificarlo(simil booleano)
+    */
     FILE *file;
     if (file = fopen(nombreArchivo, "r"))
     {
