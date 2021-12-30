@@ -163,7 +163,7 @@ int main()
     // Creo las listas enlazadas para guardar clientes y productos
     Lista_enlazada_cliente *Lista_cliente = (Lista_enlazada_cliente *)calloc(1, sizeof(Lista_enlazada_cliente));
     Lista_enlazada_producto *Lista_producto = (Lista_enlazada_producto *)calloc(1, sizeof(Lista_enlazada_producto));
-    
+
     // Leo los archivos binarios y cargo las listas
     archivo_a_lista_productos(Lista_producto);
     archivo_a_lista_clientes(Lista_cliente);
@@ -175,7 +175,7 @@ int main()
 
 
         borrar_pantalla();
-        
+
         // Muestro al usuario el menu principal y guardo su opcion
         opcion = imprimir_menu_principal();
         switch (opcion)
@@ -241,7 +241,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                 {
                     borrar_pantalla();
                     imprimir_cliente(nodo_actual_cliente->datos, i);
-                    
+
                     // Mostramos los productos para comprar
                     listar_productos(lista_datos_productos);
 
@@ -263,9 +263,9 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                                     printf("\nStock Insuficiente\n");
                                 }
                             }while( cantidad > nodo_actual_producto->datos.stock );
-                            
 
-                            // Guardamos la venta 
+
+                            // Guardamos la venta
                             nodo_actual_producto->datos.stock = nodo_actual_producto->datos.stock - cantidad;
                             nodo_actual_producto->datos.vendidos += cantidad;
                             nodo_actual_cliente->datos.cant_dias_sin_Comprar=0;
@@ -297,7 +297,7 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                             // Guardamos el monto
                             ticket->monto = facturacion_por_venta;
                             ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
-                            
+
                             // Guardamos la fecha
                             ticket->fecha.anio = info_tiempo->tm_year+1900;
                             ticket->fecha.mes = info_tiempo->tm_mon+1;
@@ -395,7 +395,7 @@ void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_pr
 void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
 {
     int opcion=0;
-    while (opcion != 7)
+    while (opcion != 8)
     {
         aumentar_dias_sin_compra(lista_datos_clientes);
         borrar_pantalla();
@@ -423,7 +423,6 @@ void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
         case 7:
             listar_clientes_sin_compra(lista_datos_clientes);
             break;
-
         case 8:
             printf("\nSaliendo del menu Admin de clientes\n");
             frenar();
@@ -611,7 +610,7 @@ void cargar_clientes(Lista_enlazada_cliente * lista)
 
 }
 
-// Insertamos el nodo dentro de la lista 
+// Insertamos el nodo dentro de la lista
 void insertar_nodo_cliente(Lista_enlazada_cliente *lista, Clientes *datos)
 {
     struct Nodo_cliente *nuevo_nodo = crear_nodo_cliente(datos);
@@ -762,8 +761,8 @@ int buscar_cliente(Lista_enlazada_cliente * lista, char * mensaje)
     return id;
 }
 
-/* 
-    Buscamos el cliente que el usuario quiere borrar y 
+/*
+    Buscamos el cliente que el usuario quiere borrar y
     dependiendo de donde se encuentre en la lista decidimos como borrarlo
 */
 void eliminar_cliente(Lista_enlazada_cliente * lista)
@@ -873,7 +872,7 @@ void listar_clientes_vip(Lista_enlazada_cliente *lista)
 }
 
 
-/* 
+/*
     Listamos los clientes que no tienen comprar segun
     la cantidad de dias que quiere ver el usuario
 */
@@ -912,13 +911,13 @@ void listar_clientes_sin_compra_fecha(Lista_enlazada_cliente *lista)
     return;
 }
 
-/* 
+/*
     Recorremos la lista de clientes y vamos guardando la estructura
     de cada cliente, sin guardar el nodo
 */
 void lista_clientes_a_archivo(Lista_enlazada_cliente *lista)
 {
-    
+
     FILE * archivo = abrir_archivo(clientes_binario, "wb");
     struct Nodo_cliente *nodo_actual = lista->cabeza;
     for (int i = 0; i < lista->tam; i++)
@@ -954,7 +953,7 @@ void archivo_a_lista_clientes(Lista_enlazada_cliente *lista)
     }
 }
 
-/* 
+/*
     Pedimos al usuario los datos del producto y luego
     lo insertamos en un nodo de la lista
     En caso de que el usuario quiera, repetimos este proceso
@@ -1056,10 +1055,10 @@ void modificar_producto(Lista_enlazada_producto * lista)
             {
                 // Muestro el producto
                 imprimir_producto(nodo_actual->datos, i);
-                
+
                 printf("\nIngrese los nuevos datos\n");
                 ingresar_producto(&nodo_actual->datos);
-                
+
                 // Persisto los datos en el archivo
                 lista_productos_a_archivo(lista);
                 printf("\nProducto actualizado correctamente\n");
@@ -1088,10 +1087,10 @@ void aumentar_stock(Lista_enlazada_producto * lista)
         int id, unidades;
         borrar_pantalla();
         listar_productos(lista);
-        
+
         // Guardo que producto se quiere modificar
         id = buscar_producto(lista, "Ingrese el ID del producto a aumentar stock: ");
-        
+
 
         // Recorro la lista hasta llegar al producto seleccionado
         struct Nodo_producto *nodo_actual = lista->cabeza;
@@ -1135,11 +1134,11 @@ void eliminar_producto(Lista_enlazada_producto * lista)
 
         // Notese que ID = Posicion en la lista
 
-        // Si queremos eliminar la cabeza 
+        // Si queremos eliminar la cabeza
         if(id==1)
         {
             eliminar_producto_cabeza(lista);
-        
+
         }
         // Si queremos eliminar la cola
         else if (id==lista->tam)
@@ -1167,7 +1166,6 @@ void eliminar_producto_cabeza(Lista_enlazada_producto * lista)
     return;
 }
 
-
 // Funcion para eliminar un nodo en caso de estar en la cola
 void eliminar_producto_cola(Lista_enlazada_producto * lista)
 {
@@ -1181,7 +1179,6 @@ void eliminar_producto_cola(Lista_enlazada_producto * lista)
     lista->tam--;
     return;
 }
-
 
 // Funcion para eliminar un nodo en caso de estar en el medio
 void eliminar_producto_medio(Lista_enlazada_producto * lista, int id)
@@ -1217,8 +1214,8 @@ void insertar_nodo_producto(Lista_enlazada_producto *lista, Productos *datos)
 {
     // Creo un nodo con los datos
     struct Nodo_producto *nuevo_nodo = crear_nodo_producto(datos);
-    
-    
+
+
     /* Realizo la insercion del nodo*/
     if (lista->tam == 0) // Primera Insercion
     {
@@ -1247,20 +1244,20 @@ struct Nodo_producto *crear_nodo_producto(Productos *datos)
         printf("Insuficiente Memoria");
         exit(-1);
     }
-    
-    // Guardo los datos en el nuevo nodo 
+
+    // Guardo los datos en el nuevo nodo
     nuevo_nodo->datos = *datos;
     nuevo_nodo->siguiente = NULL;
 
     // Devuelvo el nodo
-    return nuevo_nodo;  
+    return nuevo_nodo;
 }
 
 void producto_mas_vendido(Lista_enlazada_producto * lista)
 {
     borrar_pantalla();
     int max=0, id=0, mayor=0;
-    
+
     // Verifico si hay productos
     if (lista->tam == 0)
     {
@@ -1288,7 +1285,7 @@ void producto_mas_vendido(Lista_enlazada_producto * lista)
 
     struct Nodo_producto *nodo_actual2 = lista->cabeza;
 
-    
+
     if(mayor==1)
     {
         for (int j = 0; j < id; j++)
@@ -1392,7 +1389,7 @@ void facturacion_por_dia()
 }
 
 void facturacion_hoy()
-{  
+{
     // Si existe el binario de tickets
     if(archivo_existe(tickets_binario) == 1)
     {
@@ -1429,7 +1426,7 @@ void facturacion_hoy()
             fread(ticket, sizeof(Tickets), 1, archivo);
         }
 
-        // Imprimimos la facturacion 
+        // Imprimimos la facturacion
         printf("\nLa facturacion de hoy %d/%02d/%02d de la empresa es: %.2f\n", info_tiempo->tm_year+1900, info_tiempo->tm_mon+1, info_tiempo->tm_mday, facturacion);
         frenar();
         free(ticket);
@@ -1479,8 +1476,8 @@ FILE * abrir_archivo(char * nombre_archivo, char * modo)
 
 void lista_productos_a_archivo(Lista_enlazada_producto *lista)
 {
-    
-    
+
+
     FILE * archivo = abrir_archivo(productos_binario, "wb");
     struct Nodo_producto *nodo_actual = lista->cabeza;
 
@@ -1490,7 +1487,7 @@ void lista_productos_a_archivo(Lista_enlazada_producto *lista)
         // guardamos los datos del nodo(sin el nodo)
         fwrite(&nodo_actual->datos, sizeof(Productos), 1, archivo);
 
-        // Avanzamos al siguiente nodo 
+        // Avanzamos al siguiente nodo
         nodo_actual = nodo_actual->siguiente;
     }
     fclose(archivo);
@@ -1505,7 +1502,7 @@ void archivo_a_lista_productos(Lista_enlazada_producto *lista)
         FILE *archivo=abrir_archivo(productos_binario, "rb");
         Productos *producto = malloc(sizeof(Productos));
         fseek(archivo, 0, SEEK_SET);
-        
+
         // Leemos el producto del archivo binario
         fread(producto, sizeof(Productos), 1, archivo);
         while(!feof(archivo))
@@ -1518,10 +1515,9 @@ void archivo_a_lista_productos(Lista_enlazada_producto *lista)
     }
 }
 
-
 int archivo_existe(char *nombreArchivo)
 {
-    /* 
+    /*
         Verificamos si es posible abrir el archivo,
         devolvemos 1 o 0 para identificarlo(simil booleano)
     */
@@ -1537,14 +1533,12 @@ int archivo_existe(char *nombreArchivo)
     }
 }
 
-
-
 void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
 {
     int dias = 0;
     if(archivo_existe(fecha_binario))
     {
-        /* 
+        /*
             Si tenemos un archivo binario con fecha procedemos a abrirlo
             y calcular la diferencia de fechas
         */
@@ -1574,9 +1568,9 @@ void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
     }
     else
     {
-        /* 
-            Si no tenemos un archivo binario con fecha 
-            procedemos a generarlo para comparar si cambio de dia 
+        /*
+            Si no tenemos un archivo binario con fecha
+            procedemos a generarlo para comparar si cambio de dia
             o no
         */
         FILE * archivo = abrir_archivo(fecha_binario, "wb");
@@ -1597,11 +1591,11 @@ void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
         fclose(archivo);
     }
 
-    
+
     if(fabs(dias)>0)
     {
         /*
-            Si la diferencia entre dias es mayor a 0, es decir que paso un dia, procedemos 
+            Si la diferencia entre dias es mayor a 0, es decir que paso un dia, procedemos
             a aumentar la cantidad de dias sin comprar del cliente
         */
         struct Nodo_cliente *nodo_actual = lista->cabeza;
@@ -1618,7 +1612,6 @@ void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
     }
 }
 
-
 int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
 {
     int bisiesto[12]={31,29,31,30,31,30,31,31,30,31,30,31};
@@ -1627,7 +1620,7 @@ int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
 	int dias1,dias2;
 	dias1=dias2=0;
 
-    /* 
+    /*
         Realizamos todas las tranformaciones necesarias
         para pasar las fechas a dias y guardamos ese valor
     */
@@ -1656,7 +1649,7 @@ int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
 	dias1=(fecha1->anio-1)*365+dias1+dia_mes1+fecha1->dia;
 
 
-    /* 
+    /*
         Realizamos todas las tranformaciones necesarias
         para pasar las fechas a dias y guardamos ese valor
     */
