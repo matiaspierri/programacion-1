@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #define VIP 800000
 #define productos_binario "productos.bin"
 #define clientes_binario "clientes.bin"
 #define tickets_binario "tickets.bin"
+#define fecha_binario "fecha.bin"
 
 typedef struct
 {
@@ -62,10 +64,19 @@ typedef struct
 
 typedef struct
 {
+    int anio;
+    int mes;
+    int dia;
+    int hora;
+    int minuto;
+    int segundo;
+}Fecha;
+
+typedef struct
+{
     char cliente[100];
     char producto[100];
-    char dia[100];
-    char hora[100];
+    Fecha fecha;
     float monto;
     int pago_vip;
 }Tickets;
@@ -82,7 +93,7 @@ void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_pr
 void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos);
 void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes);
 void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos);
-
+void menu_admin_facturacion(Lista_enlazada_cliente * lista_datos_cliente, Lista_enlazada_producto * lista_datos_producto);
 
 //Funciones pantalla clientes
 void cargar_clientes(Lista_enlazada_cliente * lista);
@@ -123,6 +134,9 @@ struct Nodo_producto *crear_nodo_producto(Productos *datos);
 void lista_productos_a_archivo(Lista_enlazada_producto *lista);
 void archivo_a_lista_productos(Lista_enlazada_producto *lista);
 
+//Funciones pantalla Facturacion
+void producto_mas_vendido(Lista_enlazada_producto * lista);
+
 //Funciones generales
 void borrar_pantalla();
 void frenar();
@@ -132,6 +146,9 @@ FILE * abrir_archivo(char * nombre_archivo, char * modo);
 void vaciar_archivo(char *nombreArchivo);
 int archivo_existe(char *nombreArchivo);
 void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista);
+void imprimir_ticket(Tickets * datos);
+int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2);
+
 
 int main()
 {
@@ -142,6 +159,7 @@ int main()
     archivo_a_lista_clientes(Lista_cliente);
     do
     {
+        aumentar_dias_sin_compra(Lista_cliente);
         borrar_pantalla();
         opcion = imprimir_menu_principal();
         switch (opcion)
@@ -153,7 +171,6 @@ int main()
             menu_admin(Lista_cliente, Lista_producto);
             break;
         case 3:
-            aumentar_dias_sin_compra(Lista_cliente);
             cerrar_programa();
             break;
         default:
@@ -241,21 +258,28 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
                             nodo_actual_producto = nodo_actual_producto->siguiente;
                         }
                     }
-                    printf("\nDesea realizar otra compra S/N: ");
-                    fflush(stdin);
-                    scanf(" %c", &respuesta);
-                    strcpy(ticket->cliente, nodo_actual_cliente->datos.razon_social);
-                    strcpy(ticket->producto, nodo_actual_producto->datos.nombre);
-                    ticket->monto = facturacion_por_venta;
-                    ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
-
 
                     time_t t;
                     struct tm *info_tiempo;
                     time(&t);
                     info_tiempo = localtime(&t);
-                    printf("\n%02d:%02d:%02d", info_tiempo->tm_year+1900 ,info_tiempo->tm_mday, info_tiempo->tm_mon+1);
-                    printf("\n%02d:%02d:%02d\n", info_tiempo->tm_hour, info_tiempo->tm_min, info_tiempo->tm_sec);
+                    strcpy(ticket->cliente, nodo_actual_cliente->datos.razon_social);
+                    strcpy(ticket->producto, nodo_actual_producto->datos.nombre);
+                    ticket->monto = facturacion_por_venta;
+                    ticket->pago_vip = nodo_actual_cliente->datos.cliente_vip;
+                    ticket->fecha.anio = info_tiempo->tm_year+1900;
+                    ticket->fecha.mes = info_tiempo->tm_mday;
+                    ticket->fecha.dia = info_tiempo->tm_mon+1;
+                    ticket->fecha.hora = info_tiempo->tm_hour;
+                    ticket->fecha.minuto = info_tiempo->tm_min;
+                    ticket->fecha.segundo = info_tiempo->tm_sec;
+
+                    printf("\n**********Su ticket**********\n");
+                    imprimir_ticket(ticket);
+
+                    printf("\nDesea realizar otra compra S/N: ");
+                    fflush(stdin);
+                    scanf(" %c", &respuesta);
 
                     if(toupper(respuesta)=='S')
                     {
@@ -290,11 +314,23 @@ void menu_cliente(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_
     }
 }
 
+void imprimir_ticket(Tickets * datos)
+{
+    printf("\nNombre del Cliente: %s\n", datos->cliente);
+    printf("Producto: %s\n", datos->producto);
+    printf("Monto: %.2f\n", datos->monto);
+    printf("Pago con descuento: ");
+    if(datos->pago_vip==1){printf("SI\n");}else{printf("NO\n");}
+    printf("Fecha: %04d/%02d/%02d\n", datos->fecha.anio, datos->fecha.mes, datos->fecha.dia);
+    printf("Hora: %02d/%02d/%02d\n", datos->fecha.hora, datos->fecha.minuto, datos->fecha.segundo);
+}
+
 void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_producto * lista_datos_productos)
 {
     int opcion=0;
     while (opcion != 4)
     {
+        aumentar_dias_sin_compra(lista_datos_clientes);
         borrar_pantalla();
         opcion = imprimir_menu_admin();
         switch (opcion)
@@ -306,7 +342,7 @@ void menu_admin(Lista_enlazada_cliente * lista_datos_clientes, Lista_enlazada_pr
             menu_admin_productos(lista_datos_productos);
             break;
         case 3:
-
+            menu_admin_facturacion(lista_datos_clientes, lista_datos_productos);
             break;
         case 4:
             printf("\nSaliendo del Menu de Administradores\n");
@@ -324,6 +360,7 @@ void menu_admin_clientes(Lista_enlazada_cliente * lista_datos_clientes)
     int opcion=0;
     while (opcion != 7)
     {
+        aumentar_dias_sin_compra(lista_datos_clientes);
         borrar_pantalla();
         opcion = imprimir_menu_admin_clientes();
         switch (opcion)
@@ -384,6 +421,41 @@ void menu_admin_productos(Lista_enlazada_producto * lista_datos_productos)
             break;
         case 6:
             printf("\nSaliendo del menu Admin de Productos\n");
+            frenar();
+            break;
+        default:
+            invalida();
+            break;
+        }
+    }
+}
+
+void menu_admin_facturacion(Lista_enlazada_cliente * lista_datos_cliente, Lista_enlazada_producto * lista_datos_producto)
+{
+    int opcion=0;
+    while (opcion != 6)
+    {
+        borrar_pantalla();
+        opcion = imprimir_menu_admin_facturacion();
+        switch (opcion)
+        {
+        case 1:
+            producto_mas_vendido(lista_datos_producto);
+            break;
+        case 2:
+            //Opcion 2: Facturacion por Dia.
+            break;
+        case 3:
+            //Opcion 3: Facturacion de Hoy.
+            break;
+        case 4:
+            //Opcion 4: Facturacion Historica.
+            break;
+        case 5:
+            //Opcion 5: Volver al Menu admin.
+            break;
+        case 6:
+            printf("\nSaliendo del menu Admin de Facturacion\n");
             frenar();
             break;
         default:
@@ -1048,6 +1120,48 @@ struct Nodo_producto *crear_nodo_producto(Productos *datos)
     return nuevo_nodo;
 }
 
+void producto_mas_vendido(Lista_enlazada_producto * lista)
+{
+    borrar_pantalla();
+    int max=0, id=0;
+    if (lista->tam == 0)
+    {
+        printf("\nNo hay Productos\n");
+        frenar();
+        return;
+    }
+    struct Nodo_producto *nodo_actual = lista->cabeza;
+
+    for (int i = 0; i < lista->tam; i++)
+    {
+        if(max<nodo_actual->datos.vendidos)
+        {
+            id=i;
+            max=nodo_actual->datos.vendidos;
+        }
+        nodo_actual = nodo_actual->siguiente;
+    }
+
+    struct Nodo_producto *nodo_actual2 = lista->cabeza;
+
+    for (int j = 0; j < id; j++)
+    {
+        nodo_actual2 = nodo_actual2->siguiente;
+    }
+    printf("\nEl producto mas vendido es \n");
+    imprimir_producto(nodo_actual2->datos, id);
+
+    free(nodo_actual2);
+    free(nodo_actual);
+    frenar();
+    return;
+}
+
+
+
+
+
+
 void borrar_pantalla()
 {
     system("cls");
@@ -1136,17 +1250,121 @@ int archivo_existe(char *nombreArchivo)
 
 void aumentar_dias_sin_compra(Lista_enlazada_cliente * lista)
 {
-    struct Nodo_cliente *nodo_actual = lista->cabeza;
-    for (int i = 0; i < lista->tam; i++)
+    int dias = 0;
+    if(archivo_existe(fecha_binario))
     {
-        if(nodo_actual->datos.cant_dias_sin_Comprar!=-1)
-        {
-            nodo_actual->datos.cant_dias_sin_Comprar++;
-        }
-        nodo_actual = nodo_actual->siguiente;
+        FILE * archivo = abrir_archivo(fecha_binario, "r+b");
+        Fecha *fecha1 = malloc(sizeof(Fecha));
+        fseek(archivo, 0, SEEK_SET);
+        fread(fecha1, sizeof(Fecha), 1, archivo);
+        Fecha *fecha2 = malloc(sizeof(Fecha));
+        time_t t;
+        struct tm *info_tiempo;
+        time(&t);
+        info_tiempo = localtime(&t);
+        fecha2->anio = info_tiempo->tm_year+1900;
+        fecha2->mes = info_tiempo->tm_mon+1;
+        fecha2->dia = info_tiempo->tm_mday;
+        fecha2->hora = info_tiempo->tm_hour;
+        fecha2->minuto = info_tiempo->tm_min;
+        fecha2->segundo = info_tiempo->tm_sec;
+
+        dias=diferencia_entre_fecha( fecha1, fecha2);
+
+        rewind(archivo);
+        fwrite(fecha2, sizeof(Fecha), 1, archivo);
+        free(fecha1);
+        free(fecha2);
+        fclose(archivo);
     }
-    lista_clientes_a_archivo(lista);
-    return;
+    else
+    {
+        FILE * archivo = abrir_archivo(fecha_binario, "wb");
+        Fecha *fecha1 = malloc(sizeof(Fecha));
+
+        time_t t;
+        struct tm *info_tiempo;
+        time(&t);
+        info_tiempo = localtime(&t);
+        fecha1->anio = info_tiempo->tm_year+1900;
+        fecha1->mes = info_tiempo->tm_mon+1;
+        fecha1->dia = info_tiempo->tm_mday;
+        fecha1->hora = info_tiempo->tm_hour;
+        fecha1->minuto = info_tiempo->tm_min;
+        fecha1->segundo = info_tiempo->tm_sec;
+
+        fwrite(fecha1, sizeof(Fecha), 1, archivo);
+        fclose(archivo);
+    }
+
+    if(fabs(dias)>0)
+    {
+        struct Nodo_cliente *nodo_actual = lista->cabeza;
+        for (int i = 0; i < lista->tam; i++)
+        {
+            if(nodo_actual->datos.cant_dias_sin_Comprar!=-1)
+            {
+                nodo_actual->datos.cant_dias_sin_Comprar+=fabs(dias);
+            }
+            nodo_actual = nodo_actual->siguiente;
+        }
+        lista_clientes_a_archivo(lista);
+        return;
+    }
 }
 
-
+int diferencia_entre_fecha( Fecha * fecha1, Fecha * fecha2)
+{
+    int bisiesto[12]={31,29,31,30,31,30,31,31,30,31,30,31};
+	int normal[12]={31,28,31,30,31,30,31,31,30,31,30,31};
+    int i,j;
+	int dias1,dias2;
+	dias1=dias2=0;
+	for(i=1; i<fecha1->anio;i++)
+	{
+        if((i%4==0&&i%400!=0)||(i%100==0))
+        {
+            dias1++;
+        }
+	}
+	int dia_mes1=0;
+	if( (fecha1->anio%4==0 && fecha1->anio%400!=0) || (fecha1->anio%100==0) )
+	{
+        for(int j=0;j<fecha1->mes;j++)
+        {
+            dia_mes1+=bisiesto[j];
+        }
+	}
+	else
+	{
+		for(j=0;j<fecha1->mes;j++)
+        {
+            dia_mes1+=normal[j];
+        }
+	}
+	dias1=(fecha1->anio-1)*365+dias1+dia_mes1+fecha1->dia;
+	for( i=1; i<fecha2->anio;i++)
+	{
+        if((i%4==0&&i%400!=0)||(i%100==0))
+        {
+            dias2++;
+        }
+	}
+	int dia_mes2=0;
+	if((fecha2->anio%4==0&&fecha2->anio%400!=0)||(fecha2->anio%100==0))
+	{
+        for( j=0;j<fecha2->mes;j++)
+        {
+            dia_mes2=dia_mes2+bisiesto[j];
+        }
+	}
+	else
+    {
+        for(j=0;j<fecha2->mes;j++)
+        {
+            dia_mes2=dia_mes2+normal[j];
+        }
+	}
+	dias2=(fecha2->anio-1)*365+dias2+dia_mes2+fecha2->dia;
+	return dias2-dias1;
+}
